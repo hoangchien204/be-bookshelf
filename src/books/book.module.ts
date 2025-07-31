@@ -1,0 +1,17 @@
+// src/books/book.module.ts
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Book } from '../entitis/book.entity';
+import { BookService } from './book.service';
+import { BookController } from './book.controller';
+import { UploadModule } from 'src/upload/upload.module';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Book]),
+  UploadModule
+  ],
+  providers: [BookService],
+  controllers: [BookController],
+  exports: [TypeOrmModule]
+})
+export class BookModule {}
