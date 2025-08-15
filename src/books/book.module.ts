@@ -5,10 +5,12 @@ import { Book } from '../entitis/book.entity';
 import { BookService } from './book.service';
 import { BookController } from './book.controller';
 import { UploadModule } from 'src/upload/upload.module';
+import { SeriesModule } from 'src/series/series.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Book]),
-  UploadModule
+  UploadModule,
+  SeriesModule
   ],
   providers: [BookService],
   controllers: [BookController],

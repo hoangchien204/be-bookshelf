@@ -9,7 +9,7 @@ import { BookModule } from './books/book.module';
 import { UserActivityModule } from './user-activities/user-activity.module';
 import { AuthModule } from './auth/auth.module';
 import { GenreModule } from './genres/genre.module';
-
+import { SeriesModule } from './series/series.module';
 @Module({
   imports: [
     BookModule,
@@ -17,6 +17,7 @@ import { GenreModule } from './genres/genre.module';
     UserActivityModule,
     AuthModule,
     GenreModule,
+    SeriesModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

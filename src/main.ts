@@ -12,7 +12,7 @@ app.enableCors({
     origin: '*',
   });
   // Middleware bắt lỗi 413
-   app.use(bodyParser.json({ limit: '200mb' }));
+  app.use(bodyParser.json({ limit: '200mb' }));
   app.use(bodyParser.urlencoded({ limit: '200mb', extended: true }));
 
 app.use(bodyParser.urlencoded({ extended: true }));

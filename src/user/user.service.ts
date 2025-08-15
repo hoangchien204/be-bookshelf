@@ -26,7 +26,6 @@ export class UserService {
     return this.userRepository.findOneBy({ username }); 
   }
    async create(userData: Partial<User>) {
-    // ✅ Mã hóa password
     const hashedPassword = await bcrypt.hash(userData.password, 10);
 
     const user = this.userRepository.create({

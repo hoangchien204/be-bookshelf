@@ -1,5 +1,12 @@
 // src/books/book.entity.ts
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import {  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+ } from 'typeorm';
+import { Series } from './series.entity'; 
 
 @Entity('books')
 export class Book {
@@ -26,7 +33,20 @@ export class Book {
 
   @Column({ default: 'pdf' })
   fileType: string;
-
+  
+  @Column({ default: false })
+  isSeries: boolean;
+  
+  @ManyToOne(() => Series, (series) => series.books, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'seriesId' })
+  series?: Series | null;
+  
+  @Column({ type: 'uuid', nullable: true })
+  seriesId?: string | null;
+  
+  @Column({ type: 'int', nullable: true })
+  volumeNumber?: number | null;
+  
   @CreateDateColumn()
   createdAt: Date;
 }

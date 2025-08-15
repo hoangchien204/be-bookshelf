@@ -1,37 +1,64 @@
 // src/books/book.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Book } from '../entitis/book.entity';
+import { SeriesService } from '../series/series.service';
 
 @Injectable()
 export class BookService {
   constructor(
     @InjectRepository(Book)
-    private bookRepository: Repository<Book>,
+    private readonly bookRepository: Repository<Book>,
+    private readonly seriesService: SeriesService, // inject để quản lý series
   ) {}
 
-  findAll() {
-    return this.bookRepository.find();
-  }
+  findAll(filter?: { isSeries?: boolean }) {
+  return this.bookRepository.find({
+    where: filter?.isSeries !== undefined ? { isSeries: filter.isSeries } : {},
+    relations: ['series'], // lấy luôn thông tin series
+    order: { createdAt: 'DESC' },
+  });
+}
 
-  findOne(id: string) {
-    return this.bookRepository.findOneBy({ id });
-  }
 
-  create(bookData: Partial<Book>) {
-    const book = this.bookRepository.create(bookData);
+async findOne(id: string) {
+  const book = await this.bookRepository.findOne({
+    where: { id },
+    relations: ['series'],
+  });
+  if (!book) throw new NotFoundException(`Book with id ${id} not found`);
+  return book;
+}
+
+  async create(bookData: Partial<Book> & { seriesTitleNew?: string; isSeries?: boolean }) {
+    let seriesId = bookData.seriesId || null;
+
+    // Nếu là sách theo bộ nhưng chưa có seriesId → tạo mới
+    if (bookData.isSeries && !seriesId && bookData.seriesTitleNew) {
+      const newSeries = await this.seriesService.create({
+        title: bookData.seriesTitleNew.trim(),
+      });
+      seriesId = newSeries.id;
+    }
+
+    const book = this.bookRepository.create({
+      ...bookData,
+      seriesId,
+    });
     return this.bookRepository.save(book);
   }
 
   async update(id: string, updateData: Partial<Book>) {
-  const book = await this.bookRepository.findOneBy({ id });
-  if (!book) throw new Error('Không tìm thấy sách');
-  Object.assign(book, updateData);
-  return this.bookRepository.save(book);
-}
+    const book = await this.bookRepository.findOneBy({ id });
+    if (!book) throw new NotFoundException('Không tìm thấy sách');
+    Object.assign(book, updateData);
+    return this.bookRepository.save(book);
+  }
 
-  remove(id: string) {
-    return this.bookRepository.delete(id);
+  async remove(id: string) {
+    const book = await this.bookRepository.findOneBy({ id });
+    if (!book) throw new NotFoundException('Không tìm thấy sách');
+    return this.bookRepository.remove(book);
   }
 }
