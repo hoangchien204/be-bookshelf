@@ -2,12 +2,16 @@ import { Injectable, ConflictException, NotFoundException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { Series } from '../entitis/series.entity';
+import { Book } from 'src/entitis/book.entity';
 
 @Injectable()
 export class SeriesService {
   constructor(
     @InjectRepository(Series)
     private readonly seriesRepo: Repository<Series>,
+    
+    @InjectRepository(Book)
+    private readonly bookRepo: Repository<Book>
   ) {}
 
   // body: { title: string; description?: string; coverUrl?: string }
@@ -54,6 +58,13 @@ export class SeriesService {
     return s;
   }
 
+  async findBooks(seriesId: string) {
+  return this.bookRepo.find({
+    where: { seriesId },
+    order: { volumeNumber: 'ASC' },
+    relations: ['series'], // nếu cần lấy kèm thông tin series
+  });
+}
   // body: { title?, description?, coverUrl? }
   async update(id: string, body: any) {
     const found = await this.seriesRepo.findOne({ where: { id } });

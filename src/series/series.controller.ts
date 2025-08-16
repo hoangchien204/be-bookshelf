@@ -27,6 +27,10 @@ export class SeriesController {
       limit: Number(limit),
     });
   }
+   @Get(':id/books')
+  findBooks(@Param('id') id: string) {
+    return this.seriesService.findBooks(id);
+  }
 
   @Get(':id')
   findOne(

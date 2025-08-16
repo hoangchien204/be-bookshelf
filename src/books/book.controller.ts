@@ -45,6 +45,10 @@ export class BookController {
   async findOne(@Param('id') id: string) {
     return this.bookService.findOne(id);
   }
+  @Get('series/:seriesId')
+async findBySeries(@Param('seriesId') seriesId: string) {
+  return this.bookService.findBySeries(seriesId);
+}
   @Post()
   @UseFilters(MulterExceptionFilter)
   @UseInterceptors(

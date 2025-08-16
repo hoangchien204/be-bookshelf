@@ -15,15 +15,17 @@ export class UserActivityController {
 
   // 🟡 Ghi nhận hoặc cập nhật tiến độ đọc
   @Post('read')
-  async updateReadingProgress(
-    @Body() body: { userId: string; bookId: string; page: number }
-  ) {
-    return this.activityService.upsertActivity(
-      body.userId,
-      body.bookId,
-      body.page,
-    );
-  }
+async updateReadingProgress(
+  @Request() req,
+  @Body() body: { bookId: string; page: number },
+) {
+  const userId = req.headers['x-user-id']; // 🔑 luôn từ header
+  return this.activityService.upsertActivity(
+    userId,
+    body.bookId,
+    body.page,
+  );
+}
 
   // 🟢 Lấy tiến độ đọc sách của user
   @Get('read/:bookId')
@@ -48,7 +50,7 @@ async toggleFavorite(@Request() req, @Body() body: { bookId: string }) {
 
   @Get('favorites')
 async getFavorites(@Request() req) {
-  const userId = req.headers['x-user-id']; // hoặc từ JWT nếu bạn đã decode
+  const userId = req.headers['x-user-id']
   return this.activityService.findFavoritesByUser(userId);
 }
   // 🔍 Lấy toàn bộ sách user đã đọc

@@ -49,6 +49,13 @@ async findOne(id: string) {
     return this.bookRepository.save(book);
   }
 
+    async findBySeries(seriesId: string) {
+    return this.bookRepository.find({
+      where: { seriesId },
+      order: { volumeNumber: 'ASC' },
+    });
+  }
+
   async update(id: string, updateData: Partial<Book>) {
     const book = await this.bookRepository.findOneBy({ id });
     if (!book) throw new NotFoundException('Không tìm thấy sách');
