@@ -11,21 +11,20 @@ import { UserActivityService } from './user-activity.service';
 
 @Controller('activities')
 export class UserActivityController {
-  constructor(private readonly activityService: UserActivityService) {}
+  constructor(private readonly activityService: UserActivityService) { }
 
-  // 🟡 Ghi nhận hoặc cập nhật tiến độ đọc
   @Post('read')
-async updateReadingProgress(
-  @Request() req,
-  @Body() body: { bookId: string; page: number },
-) {
-  const userId = req.headers['x-user-id']; // 🔑 luôn từ header
-  return this.activityService.upsertActivity(
-    userId,
-    body.bookId,
-    body.page,
-  );
-}
+  async updateReadingProgress(
+    @Request() req,
+    @Body() body: { bookId: string; page: number },
+  ) {
+    const userId = req.headers['x-user-id'];
+    return this.activityService.upsertActivity(
+      userId,
+      body.bookId,
+      body.page,
+    );
+  }
 
   // 🟢 Lấy tiến độ đọc sách của user
   @Get('read/:bookId')
@@ -41,18 +40,18 @@ async updateReadingProgress(
     return this.activityService.findAll();
   }
 
-  
-@Post('favorites')
-async toggleFavorite(@Request() req, @Body() body: { bookId: string }) {
-  const userId = req.headers['x-user-id'];
-  return this.activityService.toggleFavorite(userId, body.bookId);
-}
+
+  @Post('favorites')
+  async toggleFavorite(@Request() req, @Body() body: { bookId: string }) {
+    const userId = req.headers['x-user-id'];
+    return this.activityService.toggleFavorite(userId, body.bookId);
+  }
 
   @Get('favorites')
-async getFavorites(@Request() req) {
-  const userId = req.headers['x-user-id']
-  return this.activityService.findFavoritesByUser(userId);
-}
+  async getFavorites(@Request() req) {
+    const userId = req.headers['x-user-id']
+    return this.activityService.findFavoritesByUser(userId);
+  }
   // 🔍 Lấy toàn bộ sách user đã đọc
   @Get('user/:userId')
   findByUser(@Param('userId') userId: string) {
