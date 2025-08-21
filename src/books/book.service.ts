@@ -34,7 +34,6 @@ async findOne(id: string) {
   async create(bookData: Partial<Book> & { seriesTitleNew?: string; isSeries?: boolean }) {
     let seriesId = bookData.seriesId || null;
 
-    // Nếu là sách theo bộ nhưng chưa có seriesId → tạo mới
     if (bookData.isSeries && !seriesId && bookData.seriesTitleNew) {
       const newSeries = await this.seriesService.create({
         title: bookData.seriesTitleNew.trim(),

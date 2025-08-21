@@ -19,8 +19,7 @@ export class UploadService {
     customFileName: string,
   ): Promise<{ url: string }> {
     return new Promise((resolve, reject) => {
-      
-      // Xác định loại file: ảnh hoặc pdf
+     
       let resourceType: 'image' | 'raw' | 'auto' = 'auto';
 
       if (file.mimetype.startsWith('image/')) {

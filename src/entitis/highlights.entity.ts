@@ -3,9 +3,9 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
+  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  JoinColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Book } from './book.entity';
@@ -15,7 +15,6 @@ export class Highlight {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // Ai tạo highlight
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;
@@ -23,7 +22,6 @@ export class Highlight {
   @Column({ type: 'uuid' })
   userId: string;
 
-  // Thuộc sách nào
   @ManyToOne(() => Book, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'bookId' })
   book: Book;
@@ -31,22 +29,14 @@ export class Highlight {
   @Column({ type: 'uuid' })
   bookId: string;
 
-  // Thông tin highlight
-  @Column()
-  pageNumber: number;
+  @Column({ type: 'int' })
+  page: number;
 
-  @Column()
-  startOffset: number;
+  @Column({ type: 'json' })
+  rect: { x: number; y: number; width: number; height: number };
 
-  @Column()
-  endOffset: number;
-
-  @Column({ default: '#FFFF00' })
-  color: string;
-
-  // Ghi chú kèm theo highlight
   @Column({ type: 'text', nullable: true })
-  note: string | null;
+  note?: string;
 
   @CreateDateColumn()
   createdAt: Date;

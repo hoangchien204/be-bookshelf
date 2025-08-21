@@ -18,7 +18,7 @@ export class UserActivityService {
     private bookRepo: Repository<Book>,
   ) { }
 
-  // ✅ Ghi nhận hoặc cập nhật tiến độ đọc sách
+  // Ghi nhận hoặc cập nhật tiến độ đọc sách
   async upsertActivity(userId: string, bookId: string, lastPage: number) {
     const user = await this.userRepo.findOneBy({ id: userId });
     const book = await this.bookRepo.findOneBy({ id: bookId });
@@ -39,7 +39,7 @@ export class UserActivityService {
     return this.activityRepo.save(activity);
   }
 
-  // ✅ Tìm tiến độ đọc của user trên book
+  //  Tìm tiến độ đọc của user trên book
   async findReadingActivity(userId: string, bookId: string) {
     return this.activityRepo.findOne({
       where: {
@@ -49,7 +49,7 @@ export class UserActivityService {
     });
   }
 
-  // ✅ Lấy toàn bộ hoạt động (admin)
+  //  Lấy toàn bộ hoạt động (admin)
   findAll() {
     return this.activityRepo.find({ relations: ['user', 'book'] });
   }
