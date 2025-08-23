@@ -10,6 +10,8 @@ import { UserActivityModule } from './user-activities/user-activity.module';
 import { AuthModule } from './auth/auth.module';
 import { GenreModule } from './genres/genre.module';
 import { SeriesModule } from './series/series.module';
+import { CommentModule } from './comment/comment.module';
+import { RatingModule } from './ratings/rating.module';
 @Module({
   imports: [
     BookModule,
@@ -18,6 +20,8 @@ import { SeriesModule } from './series/series.module';
     AuthModule,
     GenreModule,
     SeriesModule,
+    CommentModule,
+    RatingModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

@@ -1,4 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from 'typeorm';
+import { Comment } from './comment.entity';
+import { Rating } from './rating.entity';
 
 @Entity('users')
 export class User {
@@ -23,7 +25,7 @@ export class User {
   @Column({ nullable: true })
   avatarUrl: string;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   gender: string;
 
   @Column({ type: 'date', nullable: true })
@@ -31,4 +33,11 @@ export class User {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[];
+
+  @OneToMany(() => Rating, (rating) => rating.user)
+  ratings: Rating[];
+
 }
