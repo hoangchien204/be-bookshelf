@@ -39,7 +39,6 @@ export class UserActivityService {
     return this.activityRepo.save(activity);
   }
 
-  //  Tìm tiến độ đọc của user trên book
   async findReadingActivity(userId: string, bookId: string) {
     return this.activityRepo.findOne({
       where: {

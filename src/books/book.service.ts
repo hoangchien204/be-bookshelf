@@ -47,6 +47,13 @@ async findOne(id: string) {
     });
     return this.bookRepository.save(book);
   }
+  
+  async findByAuthor(author: string) : Promise<Book[]>{
+    return this.bookRepository.find({
+      where: {author },
+      order: { createdAt: 'DESC'}
+    });
+  }
 
     async findBySeries(seriesId: string) {
     return this.bookRepository.find({
@@ -67,4 +74,19 @@ async findOne(id: string) {
     if (!book) throw new NotFoundException('Không tìm thấy sách');
     return this.bookRepository.remove(book);
   }
+ async suggestBooks(currentBookId: string, limit = 10): Promise<Book[]> {
+  const current = await this.bookRepository.findOne({
+    where: { id: currentBookId },
+  });
+  if (!current) {
+    throw new NotFoundException('Book not found');
+  }
+  return this.bookRepository
+    .createQueryBuilder('book')
+    .where('book.id != :id', { id: currentBookId }) 
+    .andWhere('book.author != :author', { author: current.author }) 
+    .orderBy('RANDOM()')
+    .limit(limit)
+    .getMany();
+}
 }

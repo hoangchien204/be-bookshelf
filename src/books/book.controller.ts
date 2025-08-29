@@ -10,7 +10,8 @@ import {
   UseFilters,
   Delete,
   Param,
-  Put
+  Put,
+  Query
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { BookService } from './book.service';
@@ -34,7 +35,7 @@ export class BookController {
   constructor(
     private readonly bookService: BookService,
     private readonly uploadService: UploadService,
-    private readonly seriesService: SeriesService, // ✅ thêm để tạo series mới
+    private readonly seriesService: SeriesService,
   ) {}
 
   @Get()
@@ -67,7 +68,7 @@ async findBySeries(@Param('seriesId') seriesId: string) {
       author: string;
       description: string;
       genre: string;
-      isSeries?: string; // form-data sẽ là string "true"/"false"
+      isSeries?: string;
       seriesId?: string;
       seriesTitleNew?: string;
       volumeNumber?: string;
@@ -77,7 +78,6 @@ async findBySeries(@Param('seriesId') seriesId: string) {
     const cover = files.cover?.[0];
     if (!pdf || !cover) throw new BadRequestException('Thiếu file PDF hoặc ảnh bìa');
 
-    // Xử lý series
     let seriesId = body.seriesId || null;
     const isSeries = String(body.isSeries).toLowerCase() === 'true';
 
@@ -87,15 +87,10 @@ async findBySeries(@Param('seriesId') seriesId: string) {
       });
       seriesId = newSeries.id;
     }
-
-    // Upload file
     const rawName = body.name.trim().replace(/\s+/g, '_');
     const fileBaseName = removeVietnameseTones(rawName.replace(/\.[^/.]+$/, ''));
-
     const pdfUpload = await this.uploadService.uploadFile(pdf, 'books/pdf', `${fileBaseName}.pdf`);
     const coverUpload = await this.uploadService.uploadFile(cover, 'books/covers', `${fileBaseName}-cover.jpg`);
-
-    // Tạo sách
     const newBook = await this.bookService.create({
       name: body.name,
       author: body.author,
@@ -118,6 +113,16 @@ async findBySeries(@Param('seriesId') seriesId: string) {
     @Body() body: { description?: string; genre?: string }
   ) {
     return this.bookService.update(id, body);
+  }
+ @Get('suggest/:id')
+async suggest(@Param('id') id: string, @Query('limit') limit?: string) {
+  const n = parseInt(limit || '10', 10);
+  return this.bookService.suggestBooks(id, n);
+}
+  //lấy ds tác giả
+  @Get('author/:author')
+  async getBooksByAuthor(@Param('author') author: string){
+    return this.bookService.findByAuthor(author);
   }
 
   @Delete(':id')

@@ -27,15 +27,12 @@ export class RatingService {
       throw new BadRequestException('Score must be between 1 and 5');
     }
 
-    // kiểm tra user
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
-    // kiểm tra book
     const book = await this.bookRepo.findOne({ where: { id: bookId } });
     if (!book) throw new NotFoundException('Book not found');
 
-    // tìm rating cũ (nếu có)
     let rating = await this.ratingRepo.findOne({
       where: { userId, bookId },
       relations: ['user'],

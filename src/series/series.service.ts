@@ -62,10 +62,9 @@ export class SeriesService {
   return this.bookRepo.find({
     where: { seriesId },
     order: { volumeNumber: 'ASC' },
-    relations: ['series'], // nếu cần lấy kèm thông tin series
+    relations: ['series'],
   });
 }
-  // body: { title?, description?, coverUrl? }
   async update(id: string, body: any) {
     const found = await this.seriesRepo.findOne({ where: { id } });
     if (!found) throw new NotFoundException('Series not found');

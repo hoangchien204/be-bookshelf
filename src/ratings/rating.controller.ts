@@ -1,15 +1,19 @@
-import { Controller, Post, Get, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, Param, UseGuards, Req } from '@nestjs/common';
 import { RatingService } from './rating.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('ratings')
 export class RatingController {
-  constructor(private readonly ratingService: RatingService) {}
+  constructor(private readonly ratingService: RatingService) { }
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   async upsert(
-    @Body() body: { userId: string; bookId: string; score: number },
+    @Req() req,
+    @Body() body: { bookId: string; score: number; content?: string },
   ) {
-    return this.ratingService.upsertRating(body.userId, body.bookId, body.score);
+    const userId = req.user.userId; 
+    return this.ratingService.upsertRating(userId, body.bookId, body.score, body.content);
   }
 
   @Get('book/:bookId')
@@ -22,9 +26,10 @@ export class RatingController {
     return this.ratingService.getAverageRating(bookId);
   }
 
-  // 🔴 Xóa đánh giá của user trên sách
+  @UseGuards(AuthGuard('jwt'))
   @Delete()
-  async remove(@Body() body: { userId: string; bookId: string }) {
-    return this.ratingService.removeRating(body.userId, body.bookId);
+ async remove(@Req() req, @Param('bookId') bookId: string) {
+    const userId = req.user.userId;
+    return this.ratingService.removeRating(userId, bookId);
   }
 }

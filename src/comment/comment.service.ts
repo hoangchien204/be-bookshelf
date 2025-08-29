@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Comment } from '../entitis/comment.entity';
@@ -35,9 +35,20 @@ export class CommentService {
     });
   }
 
-  async remove(commentId: string): Promise<void> {
-    const comment = await this.commentRepo.findOne({ where: { id: commentId } });
-    if (!comment) throw new NotFoundException('Comment not found');
-    await this.commentRepo.remove(comment);
+  async remove(commentId: string, userId: string): Promise<void> {
+  const comment = await this.commentRepo.findOne({
+    where: { id: commentId },
+    relations: ['user'],
+  });
+
+  if (!comment) {
+    throw new NotFoundException('Comment not found');
   }
+  if (comment.user.id !== userId) {
+    throw new UnauthorizedException('Bạn không có quyền xóa comment này');
+  }
+
+  await this.commentRepo.remove(comment);
+}
+
 }
