@@ -1,42 +1,37 @@
+// src/highlight/highlight.entity.ts
 import {
   Entity,
-  Column,
   PrimaryGeneratedColumn,
+  Column,
   ManyToOne,
-  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Book } from './book.entity';
 
-@Entity('highlights')
+@Entity()
 export class Highlight {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' })
-  user: User;
+  @Column()
+  cfiRange: string; // vị trí trong EPUB
 
-  @Column({ type: 'uuid' })
-  userId: string;
-
-  @ManyToOne(() => Book, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'bookId' })
-  book: Book;
-
-  @Column({ type: 'uuid' })
-  bookId: string;
-
-  @Column({ type: 'int' })
-  page: number;
-
-  @Column({ type: 'json' })
-  rect: { x: number; y: number; width: number; height: number };
+  @Column()
+  color: string;
 
   @Column({ type: 'text', nullable: true })
-  note?: string;
+  note: string;
+
+  @Column({ nullable: true })
+  locationIndex: number; // tuỳ chọn, dùng sau này thay cho "pageNumber"
+
+  @ManyToOne(() => User, (user) => user.highlights, { onDelete: 'CASCADE' })
+  user: User;
+
+  @ManyToOne(() => Book, (book) => book.highlights, { onDelete: 'CASCADE' })
+  book: Book;
 
   @CreateDateColumn()
   createdAt: Date;

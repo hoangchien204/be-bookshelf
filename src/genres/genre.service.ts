@@ -9,13 +9,13 @@ export class GenreService {
   constructor(
     @InjectRepository(Genre)
     private readonly genreRepository: Repository<Genre>,
-  ) {}
+  ) { }
 
   async findAll(): Promise<Genre[]> {
     return this.genreRepository.find({ order: { name: 'ASC' } });
   }
 
-   async create(name: string): Promise<Genre> {
+  async create(name: string): Promise<Genre> {
     const genre = this.genreRepository.create({ name });
 
     try {
@@ -30,24 +30,25 @@ export class GenreService {
 
 
   async update(id: string, name: string): Promise<Genre> {
-  const genre = await this.genreRepository.findOneBy({ id });
-  if (!genre) throw new NotFoundException('Thể loại không tồn tại');
-  genre.name = name;
-  return this.genreRepository.save(genre);
-}
-
-  async deactivate(id: string): Promise<Genre> {
-  const genre = await this.genreRepository.findOne({
-    where: { id },
-    relations: ['books'],
-  });
-
-  if (!genre) throw new NotFoundException('Không tìm thấy thể loại');
-  if (genre.books && genre.books.length > 0) {
-    throw new BadRequestException('Không thể xóa thể loại đang liên kết với sách');
+    const genre = await this.genreRepository.findOneBy({ id });
+    if (!genre) throw new NotFoundException('Thể loại không tồn tại');
+    genre.name = name;
+    return this.genreRepository.save(genre);
   }
 
-  genre.isActive = false;
-  return this.genreRepository.save(genre);
-}
+  async deactivate(id: string): Promise<Genre> {
+    const genre = await this.genreRepository.findOne({
+      where: { id },
+      relations: ['books'], 
+    });
+
+    if (!genre) throw new NotFoundException('Không tìm thấy thể loại');
+    if (genre.books && genre.books.length > 0) {
+      throw new BadRequestException('Không thể xóa thể loại đang liên kết với sách');
+    }
+
+    genre.isActive = false;
+    return this.genreRepository.save(genre);
+  }
+
 }

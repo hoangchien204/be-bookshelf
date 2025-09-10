@@ -11,6 +11,8 @@ import {
 import { Series } from './series.entity';
 import { Comment } from './comment.entity';
 import { Rating } from './rating.entity';
+import { Genre } from './genre.entity';
+import { Highlight } from './highlights.entity';
 
 @Entity('books')
 export class Book {
@@ -26,8 +28,12 @@ export class Book {
   @Column('text')
   description: string;
 
-  @Column()
-  genre: string;
+  @ManyToOne(() => Genre, (genre) => genre.books, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'genreId' })
+  genre: Genre;
+
+  @Column({ type: 'uuid', nullable: true })
+  genreId: string | null;
 
   @Column()
   coverUrl: string;
@@ -47,6 +53,9 @@ export class Book {
 
   @OneToMany(() => Comment, (comment) => comment.book)
   comments: Comment[];
+
+  @OneToMany(() => Highlight, (highlight) => highlight.book)
+  highlights: Highlight[];
 
   @Column({ type: 'uuid', nullable: true })
   seriesId?: string | null;

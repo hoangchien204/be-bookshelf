@@ -5,6 +5,13 @@ import { UserActivity } from '../entitis/user_activities.entity';
 import { User } from 'src/entitis/user.entity';
 import { Book } from 'src/entitis/book.entity';
 
+export interface UpsertActivityDto {
+  bookId: string;
+  lastPage?: number;     
+  lastLocation?: string;   
+  progressPct?: number;    
+}
+
 @Injectable()
 export class UserActivityService {
   constructor(
@@ -19,25 +26,40 @@ export class UserActivityService {
   ) { }
 
   // Ghi nhận hoặc cập nhật tiến độ đọc sách
-  async upsertActivity(userId: string, bookId: string, lastPage: number) {
-    const user = await this.userRepo.findOneBy({ id: userId });
-    const book = await this.bookRepo.findOneBy({ id: bookId });
+  async upsertActivity(
+  userId: string,
+  body: { bookId: string; lastPage?: number; lastLocation?: string; progressPct?: number }
+) {
+  const { bookId, lastPage, lastLocation, progressPct } = body;
 
-    if (!user || !book) throw new NotFoundException('User or Book not found');
+  const user = await this.userRepo.findOneBy({ id: userId });
+  const book = await this.bookRepo.findOneBy({ id: bookId });
 
-    let activity = await this.activityRepo.findOne({
-      where: { user: { id: userId }, book: { id: bookId } },
-      relations: ['user', 'book'],
-    });
-
-    if (!activity) {
-      activity = this.activityRepo.create({ user, book, lastPage });
-    } else {
-      activity.lastPage = lastPage;
-    }
-
-    return this.activityRepo.save(activity);
+  if (!user || !book) {
+    throw new NotFoundException('User or Book not found');
   }
+
+  let activity = await this.activityRepo.findOne({
+    where: { user: { id: userId }, book: { id: bookId } },
+    relations: ['user', 'book'],
+  });
+
+  if (!activity) {
+    activity = this.activityRepo.create({
+      user,
+      book,
+      lastPage,
+      lastLocation,
+      progressPct,
+    });
+  } else {
+    if (lastPage !== undefined) activity.lastPage = lastPage;
+    if (lastLocation !== undefined) activity.lastLocation = lastLocation;
+    if (progressPct !== undefined) activity.progressPct = progressPct;
+  }
+  return this.activityRepo.save(activity);
+}
+
 
   async findReadingActivity(userId: string, bookId: string) {
     return this.activityRepo.findOne({

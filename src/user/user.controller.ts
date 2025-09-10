@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Param, Delete, NotFoundException, Put, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, NotFoundException,
+          Put, UseInterceptors, UploadedFile, UseGuards, BadRequestException, Request } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '../entitis/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) { }
@@ -50,7 +52,13 @@ export class UserController {
     return this.userService.updateAvatar(id, file);
   }
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  @UseGuards(JwtAuthGuard)
+  async remove(@Param('id') id: string, @Request() req) {
+    const currentUserId = req.user.userId; // 👈 id user hiện tại từ token
+    if (id === currentUserId) {
+      throw new BadRequestException('Bạn không thể tự xoá tài khoản của mình');
+    }
     return this.userService.remove(id);
   }
+
 }

@@ -25,6 +25,12 @@ export class UserActivity {
   @Column({ type: 'int', nullable: true })
   lastPage?: number;
 
+  @Column({ type: 'text', nullable: true })
+  lastLocation?: string;
+
+  @Column({ type: 'float', nullable: true })
+  progressPct?: number;
+  
   @Column({ default: false })
   isFavorite: boolean;
 

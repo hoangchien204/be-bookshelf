@@ -43,7 +43,7 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(
       { sub: user.id, role: user.role },
-      { expiresIn: '1h' },
+      { expiresIn: '3h' },
     );
 
     return {

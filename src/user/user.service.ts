@@ -65,7 +65,9 @@ export class UserService {
     user.avatarUrl = uploadResult.url;
     return this.userRepository.save(user);
   }
-  remove(id: string) {
-    return this.userRepository.delete(id);
-  }
+ async remove(id: string) {
+  const user = await this.userRepository.findOneBy({ id });
+  if (!user) throw new NotFoundException('Không tìm thấy user');
+  return this.userRepository.remove(user);
+}
 }

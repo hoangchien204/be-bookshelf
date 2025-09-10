@@ -5,7 +5,6 @@ import {
   UseInterceptors,
   UploadedFiles,
   Body,
-  BadRequestException,
   Get,
   UseFilters,
   Delete,
@@ -13,30 +12,17 @@ import {
   Put,
   Query
 } from '@nestjs/common';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { BookService } from './book.service';
-import { UploadService } from '../upload/upload.service';
-import { SeriesService } from '../series/series.service';
 import { MulterExceptionFilter } from '../multer/multer-exception.filter';
 
-function removeVietnameseTones(str: string): string {
-  return str
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .replace(/[^a-zA-Z0-9_-]/g, '')
-    .toLowerCase();
-}
 
 
 @Controller('books')
 export class BookController {
   constructor(
     private readonly bookService: BookService,
-    private readonly uploadService: UploadService,
-    private readonly seriesService: SeriesService,
-  ) {}
+  ) { }
 
   @Get()
   async findAll() {
@@ -47,81 +33,44 @@ export class BookController {
     return this.bookService.findOne(id);
   }
   @Get('series/:seriesId')
-async findBySeries(@Param('seriesId') seriesId: string) {
-  return this.bookService.findBySeries(seriesId);
-}
+  async findBySeries(@Param('seriesId') seriesId: string) {
+    return this.bookService.findBySeries(seriesId);
+  }
   @Post()
   @UseFilters(MulterExceptionFilter)
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'pdf', maxCount: 1 },
-        { name: 'cover', maxCount: 1 },
-      ],
-      { limits: { fileSize: 200 * 1024 * 1024 } },
-    ),
-  )
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'bookFile', maxCount: 1 },
+    { name: 'cover', maxCount: 1 },
+  ]))
   async createBook(
-    @UploadedFiles() files: { pdf?: Express.Multer.File[]; cover?: Express.Multer.File[] },
-    @Body() body: {
-      name: string;
-      author: string;
-      description: string;
-      genre: string;
-      isSeries?: string;
-      seriesId?: string;
-      seriesTitleNew?: string;
-      volumeNumber?: string;
-    }
+    @UploadedFiles() files: { bookFile?: Express.Multer.File[]; cover?: Express.Multer.File[] },
+    @Body() body: any,
   ) {
-    const pdf = files.pdf?.[0];
-    const cover = files.cover?.[0];
-    if (!pdf || !cover) throw new BadRequestException('Thiếu file PDF hoặc ảnh bìa');
-
-    let seriesId = body.seriesId || null;
-    const isSeries = String(body.isSeries).toLowerCase() === 'true';
-
-    if (isSeries && !seriesId && body.seriesTitleNew?.trim()) {
-      const newSeries = await this.seriesService.create({
-        title: body.seriesTitleNew.trim(),
-      });
-      seriesId = newSeries.id;
-    }
-    const rawName = body.name.trim().replace(/\s+/g, '_');
-    const fileBaseName = removeVietnameseTones(rawName.replace(/\.[^/.]+$/, ''));
-    const pdfUpload = await this.uploadService.uploadFile(pdf, 'books/pdf', `${fileBaseName}.pdf`);
-    const coverUpload = await this.uploadService.uploadFile(cover, 'books/covers', `${fileBaseName}-cover.jpg`);
-    const newBook = await this.bookService.create({
-      name: body.name,
-      author: body.author,
-      description: body.description || '',
-      genre: body.genre,
-      fileUrl: pdfUpload.url,
-      coverUrl: coverUpload.url,
-      fileType: 'pdf',
-      isSeries,
-      seriesId,
-      volumeNumber: isSeries ? Number(body.volumeNumber) || 1 : null,
-    });
-
-    return newBook;
+    console.log("Controller files:", files);
+    console.log("Controller body:", body);
+    return this.bookService.createBook(files, body);
   }
+
 
   @Put(':id')
-  async updateBook(
+  @UseInterceptors(FileInterceptor('file'))
+  updateBook(
     @Param('id') id: string,
-    @Body() body: { description?: string; genre?: string }
+    @UploadedFiles() file?: Express.Multer.File,
+    @Body() body?: any,
   ) {
-    return this.bookService.update(id, body);
+    return this.bookService.updateBook(id, file, body);
   }
- @Get('suggest/:id')
-async suggest(@Param('id') id: string, @Query('limit') limit?: string) {
-  const n = parseInt(limit || '10', 10);
-  return this.bookService.suggestBooks(id, n);
-}
+
+
+  @Get('suggest/:id')
+  async suggest(@Param('id') id: string, @Query('limit') limit?: string) {
+    const n = parseInt(limit || '10', 10);
+    return this.bookService.suggestBooks(id, n);
+  }
   //lấy ds tác giả
   @Get('author/:author')
-  async getBooksByAuthor(@Param('author') author: string){
+  async getBooksByAuthor(@Param('author') author: string) {
     return this.bookService.findByAuthor(author);
   }
 

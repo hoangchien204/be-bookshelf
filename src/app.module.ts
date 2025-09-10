@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { config } from 'process';
 import { UserModule } from './user/user.module';
 import { BookModule } from './books/book.module';
 import { UserActivityModule } from './user-activities/user-activity.module';
@@ -12,6 +11,9 @@ import { GenreModule } from './genres/genre.module';
 import { SeriesModule } from './series/series.module';
 import { CommentModule } from './comment/comment.module';
 import { RatingModule } from './ratings/rating.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
+import { HighlightModule } from './highlights/highlight.module';
 @Module({
   imports: [
     BookModule,
@@ -22,9 +24,14 @@ import { RatingModule } from './ratings/rating.module';
     SeriesModule,
     CommentModule,
     RatingModule,
+    HighlightModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+    }),
+     MulterModule.register({
+      storage: memoryStorage(),
+      limits: { fileSize: 200 * 1024 * 1024 }, // 200MB
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

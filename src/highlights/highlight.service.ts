@@ -1,7 +1,9 @@
+// src/highlight/highlight.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Highlight } from '../entitis/highlights.entity';
+import { Highlight } from 'src/entitis/highlights.entity';
+import { CreateHighlightDto, UpdateHighlightDto } from './highlight.dto';
 
 @Injectable()
 export class HighlightService {
@@ -10,34 +12,39 @@ export class HighlightService {
     private readonly highlightRepo: Repository<Highlight>,
   ) {}
 
-  async createHighlight(data: {
-    userId: string;
-    bookId: string;
-    page: number;
-    rect: { x: number; y: number; width: number; height: number };
-    note?: string;
-  }) {
-    const highlight = this.highlightRepo.create(data);
+  async create(userId: string, dto: CreateHighlightDto) {
+    const highlight = this.highlightRepo.create({
+      cfiRange: dto.cfiRange,
+      color: dto.color,
+      note: dto.note,
+      locationIndex: dto.locationIndex,
+      user: { id: userId },
+      book: { id: dto.bookId },
+    });
     return this.highlightRepo.save(highlight);
   }
 
-  async getHighlights(userId: string, bookId: string) {
+  async findByBook(userId: string, bookId: string) {
     return this.highlightRepo.find({
-      where: { userId, bookId },
+      where: { user: { id: userId }, book: { id: bookId } },
       order: { createdAt: 'ASC' },
     });
   }
 
-  async updateHighlight(id: string, data: { rect?: any; note?: string }) {
-    const highlight = await this.highlightRepo.findOne({ where: { id } });
-    if (!highlight) throw new NotFoundException('Highlight not found');
-    Object.assign(highlight, data);
-    return this.highlightRepo.save(highlight);
+  async update(userId: string, id: string, dto: UpdateHighlightDto) {
+    const hl = await this.highlightRepo.findOne({
+      where: { id, user: { id: userId } },
+    });
+    if (!hl) throw new NotFoundException('Highlight not found');
+    Object.assign(hl, dto);
+    return this.highlightRepo.save(hl);
   }
 
-  async deleteHighlight(id: string) {
-    const result = await this.highlightRepo.delete(id);
-    if (result.affected === 0) throw new NotFoundException('Highlight not found');
-    return { deleted: true };
+  async remove(userId: string, id: string) {
+    const hl = await this.highlightRepo.findOne({
+      where: { id, user: { id: userId } },
+    });
+    if (!hl) throw new NotFoundException('Highlight not found');
+    return this.highlightRepo.remove(hl);
   }
 }

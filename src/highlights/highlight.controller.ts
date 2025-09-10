@@ -1,40 +1,45 @@
+// src/highlight/highlight.controller.ts
 import {
-  Controller,
-  Post,
   Body,
+  Controller,
+  Delete,
   Get,
   Param,
-  Delete,
   Patch,
+  Post,
   Request,
+  UseGuards,
 } from '@nestjs/common';
 import { HighlightService } from './highlight.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CreateHighlightDto, UpdateHighlightDto } from './highlight.dto';
 
 @Controller('highlights')
+@UseGuards(JwtAuthGuard)
 export class HighlightController {
   constructor(private readonly highlightService: HighlightService) {}
 
-  // 🟢 Thêm highlight
   @Post()
-  async createHighlight(@Body() body: any, @Request() req: any) {
-    const userId = req.headers['x-user-id']; // hoặc lấy từ JWT
-    return this.highlightService.createHighlight({ ...body, userId });
+  create(@Request() req, @Body() dto: CreateHighlightDto) {
+    return this.highlightService.create(req.user.userId, dto);
   }
 
-  // 🟢 Lấy toàn bộ highlight của user cho 1 book
   @Get(':bookId')
-  async getHighlights(@Request() req: any, @Param('bookId') bookId: string) {
-    const userId = req.headers['x-user-id'];
-    return this.highlightService.getHighlights(userId, bookId);
-  }
-  @Patch(':id')
-  async updateHighlight(@Param('id') id: string, @Body() body: any) {
-    return this.highlightService.updateHighlight(id, body);
+  findByBook(@Request() req, @Param('bookId') bookId: string) {
+    return this.highlightService.findByBook(req.user.userId, bookId);
   }
 
-  // 🟢 Xóa highlight
+  @Patch(':id')
+  update(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() dto: UpdateHighlightDto,
+  ) {
+    return this.highlightService.update(req.user.userId, id, dto);
+  }
+
   @Delete(':id')
-  async deleteHighlight(@Param('id') id: string) {
-    return this.highlightService.deleteHighlight(id);
+  remove(@Request() req, @Param('id') id: string) {
+    return this.highlightService.remove(req.user.userId, id);
   }
 }

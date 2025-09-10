@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from 'typeorm';
 import { Comment } from './comment.entity';
 import { Rating } from './rating.entity';
+import { Highlight } from './highlights.entity';
 
 @Entity('users')
 export class User {
@@ -39,5 +40,8 @@ export class User {
 
   @OneToMany(() => Rating, (rating) => rating.user)
   ratings: Rating[];
+
+   @OneToMany(() => Highlight, (highlight) => highlight.user)
+  highlights: Highlight[];
 
 }
