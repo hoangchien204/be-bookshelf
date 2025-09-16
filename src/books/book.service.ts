@@ -64,9 +64,6 @@ export class BookService {
     const fileExt = bookFile.mimetype === 'application/pdf' ? 'pdf' : 'epub';
     const bookUpload = await this.uploadService.uploadFile(bookFile, `books/${fileExt}`, `${fileBaseName}.${fileExt}`);
     const coverUpload = await this.uploadService.uploadFile(cover, 'books/covers', `${fileBaseName}-cover.jpg`);
-    console.log("Body:", body);
-    console.log("BookFile:", files.bookFile?.[0]);
-    console.log("Cover:", files.cover?.[0]);
     // lưu DB
     const book = this.bookRepository.create({
       name: body.name,

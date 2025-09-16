@@ -32,10 +32,15 @@ export class UserService {
   }
   async create(userData: Partial<User>) {
     const hashedPassword = await bcrypt.hash(userData.password, 10);
+    let role = 'user';
+    if (userData.role === '1' || userData.role === 'admin') {
+      role = 'admin';
+    }
 
     const user = this.userRepository.create({
       ...userData,
       password: hashedPassword,
+      role,
     });
 
     return this.userRepository.save(user);
@@ -65,9 +70,9 @@ export class UserService {
     user.avatarUrl = uploadResult.url;
     return this.userRepository.save(user);
   }
- async remove(id: string) {
-  const user = await this.userRepository.findOneBy({ id });
-  if (!user) throw new NotFoundException('Không tìm thấy user');
-  return this.userRepository.remove(user);
-}
+  async remove(id: string) {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) throw new NotFoundException('Không tìm thấy user');
+    return this.userRepository.remove(user);
+  }
 }

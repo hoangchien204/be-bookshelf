@@ -4,7 +4,9 @@ import { UserService } from './user.service';
 import { User } from '../entitis/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) { }
 
@@ -24,16 +26,7 @@ export class UserController {
 
   @Post()
   create(@Body() userData: Partial<User>): Promise<User> {
-
-    let role = 'user';
-    if (userData.role === '1') {
-      role = 'admin';
-    }
-
-    return this.userService.create({
-      ...userData,
-      role,
-    });
+    return this.userService.create(userData);
   }
   @Put(':id')
   async updateProfile(@Param('id') id: string, @Body() updateData: Partial<User>): Promise<User> {
@@ -51,10 +44,10 @@ export class UserController {
   ) {
     return this.userService.updateAvatar(id, file);
   }
+
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
   async remove(@Param('id') id: string, @Request() req) {
-    const currentUserId = req.user.userId; // 👈 id user hiện tại từ token
+    const currentUserId = req.user.userId;
     if (id === currentUserId) {
       throw new BadRequestException('Bạn không thể tự xoá tài khoản của mình');
     }

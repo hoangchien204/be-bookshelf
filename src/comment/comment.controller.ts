@@ -1,13 +1,12 @@
 import { Controller, Post, Get, Delete, Body, Param, Req, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { CommentService } from './comment.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('comments')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
-  // 🟢 Tạo comment (cần login)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(
     @Req() req,
@@ -20,7 +19,7 @@ export class CommentController {
   async findByBook(@Param('bookId') bookId: string) {
     return this.commentService.findByBook(bookId);
   }
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Req() req, @Param('id') id: string) {
     const userId = req.user.userId;

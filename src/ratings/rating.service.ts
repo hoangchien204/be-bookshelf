@@ -59,7 +59,6 @@ export class RatingService {
     });
   }
 
-  // 🟢 Lấy trung bình rating cho sách
   async getAverageRating(bookId: string): Promise<number> {
     const result = await this.ratingRepo
       .createQueryBuilder('r')
