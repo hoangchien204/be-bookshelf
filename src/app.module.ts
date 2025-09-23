@@ -14,6 +14,7 @@ import { RatingModule } from './ratings/rating.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { HighlightModule } from './highlights/highlight.module';
+import { MailerModule } from '@nestjs-modules/mailer';
 @Module({
   imports: [
     BookModule,
@@ -49,6 +50,24 @@ import { HighlightModule } from './highlights/highlight.module';
             rejectUnauthorized: false,
           },
       }), 
+    }),
+      MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        transport: {
+          host: 'smtp.gmail.com',
+          port: 465,
+          secure: true,
+          auth: {
+            user: config.get<string>('EMAIL_USER'),
+            pass: config.get<string>('EMAIL_PASS'),
+          },
+        },
+        defaults: {
+          from: '"No Reply" <no-reply@yourapp.com>',
+        },
+      }),
     }),
   ],
   controllers: [AppController],

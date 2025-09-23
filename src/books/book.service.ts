@@ -106,14 +106,13 @@ export class BookService {
     return this.bookRepository.save(book);
   }
 
-  // Create đơn giản (nếu không có file upload)
+  // Create đơn giản 
   async create(bookData: Partial<Book> & { seriesTitleNew?: string; isSeries?: boolean }) {
     let seriesId = bookData.seriesId || null;
     if (bookData.isSeries && !seriesId && bookData.seriesTitleNew) {
       const newSeries = await this.seriesService.create({ title: bookData.seriesTitleNew.trim() });
       seriesId = newSeries.id;
     }
-
     const book = this.bookRepository.create({ ...bookData, seriesId });
     return this.bookRepository.save(book);
   }

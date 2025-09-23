@@ -41,7 +41,15 @@ export class User {
   @OneToMany(() => Rating, (rating) => rating.user)
   ratings: Rating[];
 
-   @OneToMany(() => Highlight, (highlight) => highlight.user)
+  @OneToMany(() => Highlight, (highlight) => highlight.user)
   highlights: Highlight[];
 
+  @Column({ default: false })
+  isVerified: boolean;
+
+  @Column({ type: 'varchar', nullable: true })
+  verificationCode?: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  verificationExpires: Date | null;
 }

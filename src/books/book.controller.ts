@@ -10,11 +10,15 @@ import {
   Delete,
   Param,
   Put,
-  Query
+  Query,
+  UseGuards
 } from '@nestjs/common';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { BookService } from './book.service';
 import { MulterExceptionFilter } from '../multer/multer-exception.filter';
+import { Roles } from 'src/auth/roles.decorator';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/roles.guard';
 
 
 
@@ -36,8 +40,11 @@ export class BookController {
   async findBySeries(@Param('seriesId') seriesId: string) {
     return this.bookService.findBySeries(seriesId);
   }
+
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @UseFilters(MulterExceptionFilter)
+  @Roles('admin')
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'bookFile', maxCount: 1 },
     { name: 'cover', maxCount: 1 },
@@ -46,13 +53,13 @@ export class BookController {
     @UploadedFiles() files: { bookFile?: Express.Multer.File[]; cover?: Express.Multer.File[] },
     @Body() body: any,
   ) {
-    console.log("Controller files:", files);
-    console.log("Controller body:", body);
     return this.bookService.createBook(files, body);
   }
 
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @UseInterceptors(FileInterceptor('file'))
   updateBook(
     @Param('id') id: string,
@@ -62,19 +69,20 @@ export class BookController {
     return this.bookService.updateBook(id, file, body);
   }
 
-
   @Get('suggest/:id')
   async suggest(@Param('id') id: string, @Query('limit') limit?: string) {
     const n = parseInt(limit || '10', 10);
     return this.bookService.suggestBooks(id, n);
   }
-  //lấy ds tác giả
+
   @Get('author/:author')
   async getBooksByAuthor(@Param('author') author: string) {
     return this.bookService.findByAuthor(author);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   async remove(@Param('id') id: string) {
     return this.bookService.remove(id);
   }

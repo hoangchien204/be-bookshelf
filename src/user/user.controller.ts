@@ -1,10 +1,15 @@
-import { Controller, Get, Post, Body, Param, Delete, NotFoundException,
-          Put, UseInterceptors, UploadedFile, UseGuards, BadRequestException, Request } from '@nestjs/common';
+import {
+  Controller, Get, Post, Body, Param, Delete, NotFoundException,
+  Put, UseInterceptors, UploadedFile, UseGuards, BadRequestException, Request
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '../entitis/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-
+import { JwtAuthGuard, Public } from 'src/auth/jwt-auth.guard';
+import { Roles } from 'src/auth/roles.decorator';
+import { RolesGuard } from 'src/auth/roles.guard';
+import { CreateUserDto } from './create-user.dto';
+import { VerifyEmailDto } from './VerifyEmailDto';
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UserController {
@@ -25,8 +30,19 @@ export class UserController {
   }
 
   @Post()
-  create(@Body() userData: Partial<User>): Promise<User> {
-    return this.userService.create(userData);
+  @Public()
+  async create(
+    @Body() userData: CreateUserDto,
+    @Request() req
+  ): Promise<User> {
+    const creatorRole = req?.user?.role || 'user';
+    return this.userService.create(userData, creatorRole);
+  }
+
+  @Post('verifymail')
+  @Public()
+  async verifyEmail(@Body() body: VerifyEmailDto) {
+    return this.userService.verifyEmail(body.email, body.code);
   }
   @Put(':id')
   async updateProfile(@Param('id') id: string, @Body() updateData: Partial<User>): Promise<User> {
@@ -46,6 +62,7 @@ export class UserController {
   }
 
   @Delete(':id')
+  @Roles('admin')
   async remove(@Param('id') id: string, @Request() req) {
     const currentUserId = req.user.userId;
     if (id === currentUserId) {
