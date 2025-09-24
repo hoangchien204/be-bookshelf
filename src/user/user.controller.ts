@@ -7,9 +7,7 @@ import { User } from '../entitis/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard, Public } from 'src/auth/jwt-auth.guard';
 import { Roles } from 'src/auth/roles.decorator';
-import { RolesGuard } from 'src/auth/roles.guard';
 import { CreateUserDto } from './create-user.dto';
-import { VerifyEmailDto } from './VerifyEmailDto';
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UserController {
@@ -32,17 +30,17 @@ export class UserController {
   @Post()
   @Public()
   async create(
-    @Body() userData: CreateUserDto,
+    @Body() userData: CreateUserDto & { code: string },
     @Request() req
-  ): Promise<User> {
+  ) {
     const creatorRole = req?.user?.role || 'user';
     return this.userService.create(userData, creatorRole);
-  }
+  } 
 
   @Post('verifymail')
   @Public()
-  async verifyEmail(@Body() body: VerifyEmailDto) {
-    return this.userService.verifyEmail(body.email, body.code);
+  async sendVerifyCode(@Body('email') email: string) {
+    return this.userService.sendVerifyCode(email);
   }
   @Put(':id')
   async updateProfile(@Param('id') id: string, @Body() updateData: Partial<User>): Promise<User> {

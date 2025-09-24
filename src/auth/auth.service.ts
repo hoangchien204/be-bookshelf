@@ -3,6 +3,11 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
 
+interface JwtPayload {
+  sub: string;
+  role: string;
+}
+
 @Injectable()
 export class AuthService {
   private loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
@@ -41,16 +46,55 @@ export class AuthService {
 
     this.loginAttempts.delete(key);
 
-    const accessToken = this.jwtService.sign(
-      { sub: user.id, role: user.role },
-      { expiresIn: '3h' },
-    );
+    const tokens = await this.getTokens(user.id, user.role);
+
+    // hash refresh token trước khi lưu
+    user.refreshToken = await bcrypt.hash(tokens.refreshToken, 10);
+    await this.userService.update(user);
 
     return {
-      accessToken,
+      ...tokens,
       userId: user.id,
       userName: user.username,
       role: user.role,
     };
+  }
+
+  private async getTokens(userId: string, role: string) {
+    const payload = { sub: userId, role };
+
+    const accessToken = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_ACCESS_SECRET,
+      expiresIn: '15s',
+    });
+
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: '1m',
+    });
+
+    return { accessToken, refreshToken };
+  }
+
+  async refresh(refreshToken: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      }) as JwtPayload;
+
+      const user = await this.userService.findById(payload.sub);
+      if (!user || !user.refreshToken) throw new UnauthorizedException();
+
+      const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+      if (!isMatch) throw new UnauthorizedException();
+
+      const tokens = await this.getTokens(user.id, user.role);
+      user.refreshToken = await bcrypt.hash(tokens.refreshToken, 10);
+      await this.userService.update(user);
+
+      return tokens;
+    } catch {
+      throw new UnauthorizedException('Refresh token không hợp lệ hoặc đã hết hạn');
+    }
   }
 }

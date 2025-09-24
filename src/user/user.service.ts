@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from '../entitis/user.entity';
 import * as bcrypt from 'bcrypt';
 import { UploadService } from '../upload/upload.service';
@@ -9,12 +9,14 @@ import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class UserService {
-  constructor(
+  private otpCache = new Map<string, { code: string; expireAt: number }>();
 
+  constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private readonly uploadService: UploadService,
-    private readonly mailerService: MailerService
+    private readonly mailerService: MailerService,
+
   ) { }
 
   findAll() {
@@ -32,8 +34,47 @@ export class UserService {
   findByUsername(username: string) {
     return this.userRepository.findOneBy({ username });
   }
+  async findById(id: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { id } });
+  }
+  async update(user: User): Promise<User> {
+    return this.userRepository.save(user);
+  }
 
-  async create(userData: CreateUserDto, creatorRole: string): Promise<User> {
+  async sendVerifyCode(email: string) {
+    const existingUser = await this.userRepository.findOne({ where: { email } });
+    if (existingUser) {
+      throw new BadRequestException('Email đã tồn tại');
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expireAt = Date.now() + 5 * 60 * 1000;
+
+    this.otpCache.set(email, { code, expireAt });
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Mã xác minh tài khoản',
+      html: `<p>Mã xác minh của bạn là: <b>${code}</b></p>`,
+    });
+
+    return { message: 'Đã gửi mã xác minh' };
+  }
+
+  async create(userData: CreateUserDto & { code: string }, creatorRole: string): Promise<User> {
+    const record = this.otpCache.get(userData.email);
+    if (!record) {
+      throw new BadRequestException('Mã xác minh đã hết hạn hoặc không tồn tại');
+    }
+    if (record.code !== userData.code) {
+      throw new BadRequestException('Mã xác minh không đúng');
+    }
+    if (record.expireAt < Date.now()) {
+      this.otpCache.delete(userData.email);
+      throw new BadRequestException('Mã xác minh đã hết hạn');
+    }
+
+    // Check username trùng
     const existingUserByUsername = await this.userRepository.findOne({
       where: { username: userData.username },
     });
@@ -41,79 +82,27 @@ export class UserService {
       throw new BadRequestException('Username đã tồn tại');
     }
 
-    const existingUserByEmail = await this.userRepository.findOne({
-      where: { email: userData.email },
-    });
-    if (existingUserByEmail) {
-      throw new BadRequestException('Email đã tồn tại');
-    }
-
+    // Hash password
     const hashedPassword = await bcrypt.hash(userData.password, 10);
 
     let role = 'user';
-    if (
-      creatorRole === 'admin' &&
-      (userData.role === 'admin' || userData.role === '1')
-    ) {
+    if (creatorRole === 'admin' && (userData.role === 'admin' || userData.role === '1')) {
       role = 'admin';
     }
 
-    let isVerified = role === 'admin';
-    let verificationCode: string | null = null;
-    let verificationExpires: Date | null = null;
-
-    if (!isVerified) {
-      verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      verificationExpires = new Date(Date.now() + 5 * 60 * 1000);
-    }
-
-    // ép kiểu để TS hiểu đúng object
     const user = this.userRepository.create({
       ...userData,
       password: hashedPassword,
       role,
-      isVerified,
-      verificationCode,
-      verificationExpires,
-    } as DeepPartial<User>);
+      isVerified: true,
+    });
 
     const savedUser = await this.userRepository.save(user);
 
-    // 👇 gửi mail xác thực
-    if (!isVerified && verificationCode) {
-      await this.mailerService.sendMail({
-        to: savedUser.email,
-        subject: 'Mã xác minh tài khoản',
-        text: `Mã xác minh của bạn là: ${verificationCode}`,
-        html: `<p>Xin chào <b>${savedUser.username}</b>,</p>
-             <p>Mã xác minh của bạn là: <b>${verificationCode}</b></p>
-             <p>Mã này có hiệu lực trong 5 phút.</p>`,
-      });
-    }
+    // Xoá OTP sau khi dùng
+    this.otpCache.delete(userData.email);
 
     return savedUser;
-  }
-
-  async verifyEmail(email: string, code: string) {
-    const user = await this.userRepository.findOne({ where: { email } });
-
-    if (!user) throw new BadRequestException('Email không tồn tại');
-    if (user.isVerified) throw new BadRequestException('Tài khoản đã được xác minh');
-
-    if (
-      user.verificationCode !== code ||
-      !user.verificationExpires ||
-      user.verificationExpires < new Date()
-    ) {
-      throw new BadRequestException('Mã xác minh không hợp lệ hoặc đã hết hạn');
-    }
-
-    user.isVerified = true;
-    user.verificationCode = null;
-    user.verificationExpires = null;
-
-    await this.userRepository.save(user);
-    return { message: 'Xác minh email thành công' };
   }
 
   async updateProfile(id: string, updateData: Partial<User>) {
