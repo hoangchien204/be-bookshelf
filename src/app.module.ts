@@ -30,7 +30,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
       isGlobal: true,
       envFilePath: '.env',
     }),
-     MulterModule.register({
+    MulterModule.register({
       storage: memoryStorage(),
       limits: { fileSize: 200 * 1024 * 1024 }, // 200MB
     }),
@@ -39,38 +39,37 @@ import { MailerModule } from '@nestjs-modules/mailer';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
-          host: config.get('DB_HOST'),
-          port: parseInt(config.get('DB_PORT', '5432')),
-          username: config.get('DB_USER'),
-          password: config.get('DB_PASS'),
-          database: config.get('DB_NAME'),
-          synchronize: true,
-          autoLoadEntities: true,
-          ssl: {
-            rejectUnauthorized: false,
-          },
-      }), 
+        host: config.get('DB_HOST'),
+        port: parseInt(config.get('DB_PORT', '5432')),
+        username: config.get('DB_USER'),
+        password: config.get('DB_PASS'),
+        database: config.get('DB_NAME'),
+        synchronize: true,
+        autoLoadEntities: true,
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      }),
     }),
-      MailerModule.forRootAsync({
+    MailerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
         transport: {
-          host: 'smtp.gmail.com',
-          port: 465,
-          secure: true,
+          service: 'SendGrid',
           auth: {
-            user: config.get<string>('EMAIL_USER'),
-            pass: config.get<string>('EMAIL_PASS'),
+            user: 'apikey',
+            pass: config.get<string>('SENDGRID_API_KEY'),
           },
         },
         defaults: {
-          from: '"No Reply" <no-reply@yourapp.com>',
+          from: `"No Reply" <${config.get<string>('EMAIL_FROM')}>`,
         },
       }),
     }),
+
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
