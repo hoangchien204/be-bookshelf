@@ -56,7 +56,9 @@ import { MailerModule } from '@nestjs-modules/mailer';
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
         transport: {
-          service: 'SendGrid',
+          host: 'smtp.sendgrid.net',
+          port: 587,
+          secure: false,
           auth: {
             user: 'apikey',
             pass: config.get<string>('SENDGRID_API_KEY'),
