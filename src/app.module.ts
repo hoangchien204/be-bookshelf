@@ -14,7 +14,7 @@ import { RatingModule } from './ratings/rating.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { HighlightModule } from './highlights/highlight.module';
-import { MailerModule } from '@nestjs-modules/mailer';
+import { MailModule } from './mail/mail.module';
 @Module({
   imports: [
     BookModule,
@@ -51,25 +51,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
         },
       }),
     }),
-    MailerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (config: ConfigService) => ({
-        transport: {
-          host: 'smtp.sendgrid.net',
-          port: 587,
-          secure: false,
-          auth: {
-            user: 'apikey',
-            pass: config.get<string>('SENDGRID_API_KEY'),
-          },
-        },
-        defaults: {
-          from: `"No Reply" <${config.get<string>('EMAIL_FROM')}>`,
-        },
-      }),
-    }),
-
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
