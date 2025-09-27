@@ -35,13 +35,33 @@ export class UserController {
   ) {
     const creatorRole = req?.user?.role || 'user';
     return this.userService.create(userData, creatorRole);
-  } 
+  }
 
   @Post('verifymail')
   @Public()
-  async sendVerifyCode(@Body('email') email: string) {
-    return this.userService.sendVerifyCode(email);
+  async sendVerifyCode(@Body('email') email: string, @Body('purpose') purpose: 'signup' | 'reset') {
+    return this.userService.sendVerifyCode(email, purpose);
   }
+
+  @Post('reset-password')
+  @Public()
+  async resetPassword(
+    @Body('email') email: string,
+    @Body('code') code: string,
+    @Body('newPassword') newPassword: string
+  ) {
+    return this.userService.resetPassword(email, code, newPassword);
+  }
+  @Post('changePassword')
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @Request() req,
+    @Body('currentPassword') currentPassword: string,
+    @Body('newPassword') newPassword: string
+  ) {
+    return this.userService.changePassword(req.user.userId, currentPassword, newPassword);
+  }
+
   @Put(':id')
   async updateProfile(@Param('id') id: string, @Body() updateData: Partial<User>): Promise<User> {
     const updated = await this.userService.updateProfile(id, updateData);

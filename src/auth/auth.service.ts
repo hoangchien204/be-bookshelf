@@ -17,7 +17,7 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async login(emailOrUsername: string, password: string) {
     const key = emailOrUsername.toLowerCase();
@@ -65,7 +65,7 @@ export class AuthService {
 
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_ACCESS_SECRET,
-      expiresIn: '15m',
+      expiresIn: '15ms',
     });
 
     const refreshToken = await this.jwtService.signAsync(payload, {
@@ -89,6 +89,7 @@ export class AuthService {
       if (!isMatch) throw new UnauthorizedException();
 
       const tokens = await this.getTokens(user.id, user.role);
+
       user.refreshToken = await bcrypt.hash(tokens.refreshToken, 10);
       await this.userService.update(user);
 
@@ -97,4 +98,6 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token không hợp lệ hoặc đã hết hạn');
     }
   }
+
+
 }

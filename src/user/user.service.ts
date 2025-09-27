@@ -40,26 +40,86 @@ export class UserService {
   async update(user: User): Promise<User> {
     return this.userRepository.save(user);
   }
-  async sendVerifyCode(email: string) {
+
+  async sendVerifyCode(email: string, purpose: 'signup' | 'reset') {
     const existingUser = await this.userRepository.findOne({ where: { email } });
-    if (existingUser) {
+
+    if (purpose === 'signup' && existingUser) {
       throw new BadRequestException('Email đã tồn tại');
     }
 
-    // Tạo OTP 6 chữ số
+    if (purpose === 'reset' && !existingUser) {
+      throw new BadRequestException('Email không tồn tại');
+    }
+
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expireAt = Date.now() + 5 * 60 * 1000; // 5 phút
-
     this.otpCache.set(email, { code, expireAt });
 
     await this.mailService.sendMail(
       email,
-      'Mã xác minh tài khoản',
-      `Mã của bạn là: ${code}`, // plain text
-      `<p>Mã xác minh của bạn là: <b>${code}</b></p>` // HTML
+      purpose === 'signup' ? 'Mã xác minh tài khoản' : 'Mã đặt lại mật khẩu',
+      `Mã của bạn là: ${code}`,
+      `<p>Mã của bạn là: <b>${code}</b></p>`
     );
 
     return { message: 'Đã gửi mã xác minh' };
+  }
+
+  async resetPassword(email: string, code: string, newPassword: string) {
+    const record = this.otpCache.get(email);
+    if (!record) {
+      throw new BadRequestException('Mã xác minh đã hết hạn hoặc không tồn tại');
+    }
+    if (record.code !== code) {
+      throw new BadRequestException('Mã xác minh không đúng');
+    }
+    if (record.expireAt < Date.now()) {
+      this.otpCache.delete(email);
+      throw new BadRequestException('Mã xác minh đã hết hạn');
+    }
+
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new BadRequestException('Không tìm thấy người dùng');
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await this.userRepository.save(user);
+
+    this.otpCache.delete(email);
+
+    return { message: 'Đặt lại mật khẩu thành công' };
+  }
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ) {
+    // 1️⃣ Tìm user theo ID từ payload JWT
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('Người dùng không tồn tại');
+    }
+
+    // 2️⃣ Kiểm tra mật khẩu hiện tại có đúng không
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      throw new BadRequestException('Mật khẩu hiện tại không chính xác');
+    }
+
+    // 3️⃣ Không cho đặt lại mật khẩu giống mật khẩu cũ
+    const isSame = await bcrypt.compare(newPassword, user.password);
+    if (isSame) {
+      throw new BadRequestException('Mật khẩu mới không được trùng mật khẩu cũ');
+    }
+
+    // 4️⃣ Hash mật khẩu mới và cập nhật
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await this.userRepository.save(user);
+
+    return { message: '✅ Đổi mật khẩu thành công' };
   }
 
 
