@@ -123,17 +123,20 @@ export class UserService {
   }
 
 
-  async create(userData: CreateUserDto & { code: string }, creatorRole: string): Promise<User> {
-    const record = this.otpCache.get(userData.email);
-    if (!record) {
-      throw new BadRequestException('Mã xác minh đã hết hạn hoặc không tồn tại');
-    }
-    if (record.code !== userData.code) {
-      throw new BadRequestException('Mã xác minh không đúng');
-    }
-    if (record.expireAt < Date.now()) {
-      this.otpCache.delete(userData.email);
-      throw new BadRequestException('Mã xác minh đã hết hạn');
+  async create(userData: CreateUserDto & { code?: string }, creatorRole: string): Promise<User> {
+    // Nếu không phải admin → bắt buộc kiểm tra OTP
+    if (creatorRole !== 'admin') {
+      const record = this.otpCache.get(userData.email);
+      if (!record) {
+        throw new BadRequestException('Mã xác minh đã hết hạn hoặc không tồn tại');
+      }
+      if (record.code !== userData.code) {
+        throw new BadRequestException('Mã xác minh không đúng');
+      }
+      if (record.expireAt < Date.now()) {
+        this.otpCache.delete(userData.email);
+        throw new BadRequestException('Mã xác minh đã hết hạn');
+      }
     }
 
     // Check username trùng
@@ -156,13 +159,15 @@ export class UserService {
       ...userData,
       password: hashedPassword,
       role,
-      isVerified: true,
+      isVerified: true, // admin tạo trực tiếp thì verified luôn
     });
 
     const savedUser = await this.userRepository.save(user);
 
-    // Xoá OTP sau khi dùng
-    this.otpCache.delete(userData.email);
+    // Nếu không phải admin → xóa OTP
+    if (creatorRole !== 'admin') {
+      this.otpCache.delete(userData.email);
+    }
 
     return savedUser;
   }

@@ -36,7 +36,11 @@ export class UserController {
     const creatorRole = req?.user?.role || 'user';
     return this.userService.create(userData, creatorRole);
   }
-
+  @Post('admin')
+  @Roles('admin') 
+  async createByAdmin(@Body() userData: CreateUserDto) {
+    return this.userService.create(userData, 'admin');
+  }
   @Post('verifymail')
   @Public()
   async sendVerifyCode(@Body('email') email: string, @Body('purpose') purpose: 'signup' | 'reset') {

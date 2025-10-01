@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Book } from '../entitis/book.entity';
 import { SeriesService } from '../series/series.service';
 import { UploadService } from 'src/upload/upload.service';
@@ -29,20 +29,23 @@ export class BookService {
   findAll(filter?: { isSeries?: boolean }) {
     return this.bookRepository.find({
       where: filter?.isSeries !== undefined ? { isSeries: filter.isSeries } : {},
-      relations: ['series', 'genre'],
+      relations: ['series', 'genre', 'genres'],
       order: { createdAt: 'DESC' },
     });
   }
 
   async findOne(id: string) {
-    const book = await this.bookRepository.findOne({ where: { id }, relations: ['series', 'genre'] });
+    const book = await this.bookRepository.findOne({ where: { id }, relations: ['series', 'genre', 'genres'] });
     if (!book) throw new NotFoundException(`Book with id ${id} not found`);
     return book;
   }
 
   // Create sách kèm upload + series
 
-  async createBook(files: { bookFile?: Express.Multer.File[]; cover?: Express.Multer.File[] }, body: any) {
+  async createBook(
+    files: { bookFile?: Express.Multer.File[]; cover?: Express.Multer.File[] },
+    body: any,
+  ) {
     const bookFile = files.bookFile?.[0];
     const cover = files.cover?.[0];
     if (!bookFile || !cover) throw new BadRequestException('Thiếu file PDF hoặc ảnh bìa');
@@ -51,6 +54,7 @@ export class BookService {
     if (!allowedTypes.includes(bookFile.mimetype)) {
       throw new BadRequestException('Chỉ hỗ trợ PDF hoặc EPUB');
     }
+
     // xử lý series
     let seriesId = body.seriesId || null;
     const isSeries = String(body.isSeries).toLowerCase() === 'true';
@@ -63,14 +67,22 @@ export class BookService {
     const rawName = body.name.trim().replace(/\s+/g, '_');
     const fileBaseName = removeVietnameseTones(rawName.replace(/\.[^/.]+$/, ''));
     const fileExt = bookFile.mimetype === 'application/pdf' ? 'pdf' : 'epub';
-    const bookUpload = await this.uploadService.uploadFile(bookFile, `books/${fileExt}`, `${fileBaseName}.${fileExt}`);
-    const coverUpload = await this.uploadService.uploadFile(cover, 'books/covers', `${fileBaseName}-cover.jpg`);
-    // lưu DB
+    const bookUpload = await this.uploadService.uploadFile(
+      bookFile,
+      `books/${fileExt}`,
+      `${fileBaseName}.${fileExt}`,
+    );
+    const coverUpload = await this.uploadService.uploadFile(
+      cover,
+      'books/covers',
+      `${fileBaseName}-cover.jpg`,
+    );
+
+    // Tạo entity book
     const book = this.bookRepository.create({
       name: body.name,
       author: body.author,
       description: body.description || '',
-      genreId: body.genreId || null,
       fileUrl: bookUpload.url,
       coverUrl: coverUpload.url,
       fileType: fileExt,
@@ -78,6 +90,26 @@ export class BookService {
       seriesId,
       volumeNumber: isSeries ? Number(body.volumeNumber) || 1 : null,
     });
+
+    // Xử lý nhiều thể loại
+    let genresArray: string[] = [];
+    if (body.genres) {
+      try {
+        genresArray = typeof body.genres === 'string'
+          ? JSON.parse(body.genres)
+          : body.genres;
+      } catch {
+        throw new BadRequestException('genres phải là mảng id hợp lệ');
+      }
+
+      if (Array.isArray(genresArray) && genresArray.length > 0) {
+        const genreEntities = await this.bookRepository.manager
+          .getRepository(Genre)
+          .findBy({ id: In(genresArray) });
+        book.genres = genreEntities;
+      }
+    }
+
     return this.bookRepository.save(book);
   }
 
@@ -102,20 +134,22 @@ export class BookService {
       book.fileType = file.mimetype === 'application/epub+zip' ? 'epub' : 'pdf';
     }
 
-    // update body
-    if (body) {
-      if (body.description) book.description = body.description;
-
-      // Single genre
-      if (body.genreId) book.genreId = body.genreId;
-
-      // Multi genres
-      if (body.genres && Array.isArray(body.genres)) {
-        const genreEntities = await this.bookRepository.manager
-          .getRepository(Genre)
-          .findBy(body.genres);
-        book.genres = genreEntities; 
+    let genresArray: string[] = [];
+    if (body.genres) {
+      try {
+        genresArray = typeof body.genres === 'string'
+          ? JSON.parse(body.genres)   // parse nếu là string
+          : body.genres;
+      } catch {
+        throw new BadRequestException('genres phải là mảng id hợp lệ');
       }
+    }
+
+    if (Array.isArray(genresArray) && genresArray.length > 0) {
+      const genreEntities = await this.bookRepository.manager
+        .getRepository(Genre)
+        .findBy({ id: In(genresArray) });
+      book.genres = genreEntities;
     }
 
     return this.bookRepository.save(book);
