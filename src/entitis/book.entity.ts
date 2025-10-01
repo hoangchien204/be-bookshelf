@@ -7,6 +7,8 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Series } from './series.entity';
 import { Comment } from './comment.entity';
@@ -28,6 +30,15 @@ export class Book {
   @Column('text')
   description: string;
 
+  @ManyToMany(() => Genre, (genre) => genre.books, { cascade: true })
+  @JoinTable({
+    name: 'book_genres',
+    joinColumn: { name: 'bookId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'genreId', referencedColumnName: 'id' },
+  })
+  genres: Genre[];
+
+  // 🔹 Thể loại chính (single) → tạm giữ lại để fallback
   @ManyToOne(() => Genre, (genre) => genre.books, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'genreId' })
   genre: Genre;

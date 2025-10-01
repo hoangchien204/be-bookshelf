@@ -1,5 +1,5 @@
 // src/genres/entities/genre.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, ManyToMany } from 'typeorm';
 import { Book } from './book.entity';
 
 @Entity()
@@ -18,4 +18,8 @@ export class Genre {
 
   @OneToMany(() => Book, (book) => book.genre)
   books: Book[];
+
+   // 🔹 Cho multi (1 sách - nhiều thể loại)
+  @ManyToMany(() => Book, (book) => book.genres)
+  multiBooks: Book[];
 }

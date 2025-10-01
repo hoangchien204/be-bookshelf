@@ -6,11 +6,14 @@ import { BookService } from './book.service';
 import { BookController } from './book.controller';
 import { UploadModule } from 'src/upload/upload.module';
 import { SeriesModule } from 'src/series/series.module';
+import { GenreModule } from 'src/genres/genre.module';
+import { Genre } from 'src/entitis/genre.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Book]),
+  imports: [TypeOrmModule.forFeature([Book, Genre]),
   UploadModule,
-  SeriesModule
+  SeriesModule,
+  GenreModule
   ],
   providers: [BookService],
   controllers: [BookController],

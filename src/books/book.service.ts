@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Book } from '../entitis/book.entity';
 import { SeriesService } from '../series/series.service';
 import { UploadService } from 'src/upload/upload.service';
+import { Genre } from 'src/entitis/genre.entity';
 
 function removeVietnameseTones(str: string): string {
   return str
@@ -82,9 +83,13 @@ export class BookService {
 
   // Update sách kèm upload file mới
   async updateBook(id: string, file?: Express.Multer.File, body?: any) {
-    const book = await this.findOne(id);
+    const book = await this.bookRepository.findOne({
+      where: { id },
+      relations: ['genres'], // load multi genres
+    });
     if (!book) throw new NotFoundException('Không tìm thấy sách');
 
+    // update file
     if (file) {
       const rawName = book.name.trim().replace(/\s+/g, '_');
       const fileBaseName = removeVietnameseTones(rawName.replace(/\.[^/.]+$/, ''));
@@ -93,18 +98,29 @@ export class BookService {
         'books/files',
         `${fileBaseName}.${file.mimetype === 'application/epub+zip' ? 'epub' : 'pdf'}`,
       );
-
       book.fileUrl = upload.url;
       book.fileType = file.mimetype === 'application/epub+zip' ? 'epub' : 'pdf';
     }
 
+    // update body
     if (body) {
       if (body.description) book.description = body.description;
+
+      // Single genre
       if (body.genreId) book.genreId = body.genreId;
+
+      // Multi genres
+      if (body.genres && Array.isArray(body.genres)) {
+        const genreEntities = await this.bookRepository.manager
+          .getRepository(Genre)
+          .findBy(body.genres);
+        book.genres = genreEntities; 
+      }
     }
 
     return this.bookRepository.save(book);
   }
+
 
   // Create đơn giản 
   async create(bookData: Partial<Book> & { seriesTitleNew?: string; isSeries?: boolean }) {

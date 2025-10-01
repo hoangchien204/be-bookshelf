@@ -11,7 +11,8 @@ import {
   Param,
   Put,
   Query,
-  UseGuards
+  UseGuards,
+  UploadedFile
 } from '@nestjs/common';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { BookService } from './book.service';
@@ -63,7 +64,7 @@ export class BookController {
   @UseInterceptors(FileInterceptor('file'))
   updateBook(
     @Param('id') id: string,
-    @UploadedFiles() file?: Express.Multer.File,
+    @UploadedFile() file?: Express.Multer.File,
     @Body() body?: any,
   ) {
     return this.bookService.updateBook(id, file, body);
