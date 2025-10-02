@@ -27,7 +27,7 @@ export class GenreController {
     }
     return this.genreService.create(name.trim());
   }
-
+ 
   @Patch(':id')
   async update(@Param('id') id: string, @Body('name') name: string) {
     if (!name || !name.trim()) {
