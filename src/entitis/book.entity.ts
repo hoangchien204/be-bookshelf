@@ -79,6 +79,16 @@ export class Book {
 
   @OneToMany(() => Rating, (ratings) => ratings.book)
   ratings: Rating[];
+
+  // block chain
+   @Column({ nullable: true })
+  ipfsCid: string;
+
+  @Column({ nullable: true })
+  blockchainTx: string;
+
+  @Column({ nullable: true })
+  ipfsGatewayUrl: string;
 }
 
 
