@@ -61,10 +61,10 @@ export class Book {
   @ManyToOne(() => Series, (series) => series.books, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'seriesId' })
   series?: Series | null;
- 
+
   @OneToMany(() => Comment, (comment) => comment.book)
   comments: Comment[];
- 
+
   @OneToMany(() => Highlight, (highlight) => highlight.book)
   highlights: Highlight[];
 
@@ -75,13 +75,13 @@ export class Book {
   volumeNumber?: number | null;
 
   @CreateDateColumn()
-  createdAt: Date; 
+  createdAt: Date;
 
   @OneToMany(() => Rating, (ratings) => ratings.book)
   ratings: Rating[];
 
   // block chain
-   @Column({ nullable: true })
+  @Column({ nullable: true })
   ipfsCid: string;
 
   @Column({ nullable: true })
@@ -89,6 +89,9 @@ export class Book {
 
   @Column({ nullable: true })
   ipfsGatewayUrl: string;
+
+  @Column({ nullable: true })
+  metadataCid: string;
 }
 
 
