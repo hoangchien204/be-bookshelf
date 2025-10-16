@@ -53,7 +53,7 @@ export class UserService {
     }
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expireAt = Date.now() + 5 * 60 * 1000; // 5 phút
+    const expireAt = Date.now() + 5 * 60 * 1000;
     this.otpCache.set(email, { code, expireAt });
 
     await this.mailService.sendMail(
@@ -96,30 +96,30 @@ export class UserService {
     currentPassword: string,
     newPassword: string
   ) {
-    // 1️⃣ Tìm user theo ID từ payload JWT
+    // Tìm user theo ID từ payload JWT
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('Người dùng không tồn tại');
     }
 
-    // 2️⃣ Kiểm tra mật khẩu hiện tại có đúng không
+    // Kiểm tra mật khẩu hiện tại có đúng không
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       throw new BadRequestException('Mật khẩu hiện tại không chính xác');
     }
 
-    // 3️⃣ Không cho đặt lại mật khẩu giống mật khẩu cũ
+    //  Không cho đặt lại mật khẩu giống mật khẩu cũ
     const isSame = await bcrypt.compare(newPassword, user.password);
     if (isSame) {
       throw new BadRequestException('Mật khẩu mới không được trùng mật khẩu cũ');
     }
 
-    // 4️⃣ Hash mật khẩu mới và cập nhật
+    // Hash mật khẩu mới và cập nhật
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await this.userRepository.save(user);
 
-    return { message: '✅ Đổi mật khẩu thành công' };
+    return { message: 'Đổi mật khẩu thành công' };
   }
 
 

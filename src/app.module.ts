@@ -17,6 +17,7 @@ import { HighlightModule } from './highlights/highlight.module';
 import { MailModule } from './mail/mail.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { TestController } from './upload/rattinglimit.controller';
 
 @Module({
   imports: [
@@ -63,7 +64,7 @@ import { APP_GUARD } from '@nestjs/core';
       },
     ]),
   ],
-  controllers: [AppController],
+  controllers: [AppController,TestController],
   providers: [AppService,  {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

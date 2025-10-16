@@ -36,6 +36,7 @@ export class UserController {
     const creatorRole = req?.user?.role || 'user';
     return this.userService.create(userData, creatorRole);
   }
+  
   @Post('admin')
   @Roles('admin') 
   async createByAdmin(@Body() userData: CreateUserDto) {
