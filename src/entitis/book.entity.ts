@@ -38,7 +38,6 @@ export class Book {
   })
   genres: Genre[];
 
-  // 🔹 Thể loại chính (single) → tạm giữ lại để fallback
   @ManyToOne(() => Genre, (genre) => genre.books, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'genreId' })
   genre: Genre;

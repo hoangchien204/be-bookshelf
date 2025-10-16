@@ -15,6 +15,9 @@ import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { HighlightModule } from './highlights/highlight.module';
 import { MailModule } from './mail/mail.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+
 @Module({
   imports: [
     BookModule,
@@ -44,7 +47,7 @@ import { MailModule } from './mail/mail.module';
         username: config.get('DB_USER'),
         password: config.get('DB_PASS'),
         database: config.get('DB_NAME'),
-        synchronize: true,
+        synchronize: false,
         autoLoadEntities: true,
         ssl: {
           rejectUnauthorized: false,
@@ -52,8 +55,18 @@ import { MailModule } from './mail/mail.module';
       }),
     }),
     MailModule,
+     ThrottlerModule.forRoot([
+      {
+        name: 'global',
+        ttl: 60,   
+        limit: 20,  
+      },
+    ]),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,  {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },],
 })
 export class AppModule { }
