@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 const allowedOrigins = [
   'http://localhost:5173',
-
+  'https://bookshelf-8x8x.onrender.com',
 ];
 
 async function bootstrap() {
