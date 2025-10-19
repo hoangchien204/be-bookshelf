@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 const allowedOrigins = [
   'http://localhost:5173',
   'https://bookshelf-8x8x.onrender.com',
+  'https://bookshelf-5s4wfedkw-hoangchien204s-projects.vercel.app'
 ];
 
 async function bootstrap() {
