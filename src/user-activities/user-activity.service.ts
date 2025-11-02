@@ -72,8 +72,12 @@ export class UserActivityService {
 
   //  Lấy toàn bộ hoạt động (admin)
   findAll() {
-    return this.activityRepo.find({ relations: ['user', 'book'] });
-  }
+  return this.activityRepo.find({
+    relations: ['user', 'book'],
+    order: { updatedAt: 'DESC' },
+  });
+}
+
 
   findByUser(userId: string) {
     return this.activityRepo.find({
