@@ -65,7 +65,7 @@ export class UserService {
 
     return { message: 'Đã gửi mã xác minh' };
   }
-
+  //Đổi mật khẩu
   async resetPassword(email: string, code: string, newPassword: string) {
     const record = this.otpCache.get(email);
     if (!record) {
@@ -91,6 +91,7 @@ export class UserService {
 
     return { message: 'Đặt lại mật khẩu thành công' };
   }
+  //Quên mật khẩu
   async changePassword(
     userId: string,
     currentPassword: string,
@@ -124,7 +125,14 @@ export class UserService {
 
 
   async create(userData: CreateUserDto & { code?: string }, creatorRole: string): Promise<User> {
-    // Nếu không phải admin → bắt buộc kiểm tra OTP
+    // Check username trùng
+    const existingUserByUsername = await this.userRepository.findOne({
+      where: { username: userData.username },
+    });
+    if (existingUserByUsername) {
+      throw new BadRequestException('Username đã tồn tại');
+    }
+
     if (creatorRole !== 'admin') {
       const record = this.otpCache.get(userData.email);
       if (!record) {
@@ -137,14 +145,6 @@ export class UserService {
         this.otpCache.delete(userData.email);
         throw new BadRequestException('Mã xác minh đã hết hạn');
       }
-    }
-
-    // Check username trùng
-    const existingUserByUsername = await this.userRepository.findOne({
-      where: { username: userData.username },
-    });
-    if (existingUserByUsername) {
-      throw new BadRequestException('Username đã tồn tại');
     }
 
     // Hash password
