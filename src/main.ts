@@ -4,7 +4,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   'https://bookshelf-8x8x.onrender.com',
   'https://bookshelf-5s4wfedkw-hoangchien204s-projects.vercel.app',
-  'https://bookshelf-one-liard.vercel.app'
+  'https://bookshelf-one-liard.vercel.app',
+  'https://zenly.id.vn'
 ];
 
 async function bootstrap() {
