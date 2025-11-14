@@ -48,7 +48,7 @@ import { TestController } from './upload/rattinglimit.controller';
         username: config.get('DB_USER'),
         password: config.get('DB_PASS'),
         database: config.get('DB_NAME'),
-        synchronize: false,
+        synchronize: true,
         autoLoadEntities: true,
         ssl: {
           rejectUnauthorized: false,
@@ -58,8 +58,7 @@ import { TestController } from './upload/rattinglimit.controller';
     MailModule,
      ThrottlerModule.forRoot([
       {
-        name: 'global',
-        ttl: 60,   
+        ttl: 60_000,   
         limit: 20,  
       },
     ]),
