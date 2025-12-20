@@ -104,7 +104,6 @@ SQL
 SELECT * FROM books WHERE books.name = 'abc' OR '1'='1' ...
 Kết quả: API trả về TOÀN BỘ DANH SÁCH SÁCH thay vì rỗng.
 ![SQL Injection](./imgTest/SQL_IJ.jpg)
-📷 [Chèn ảnh Postman/Trình duyệt hiện full danh sách sách khi hack tại đây]
 
 ✅ Code An toàn (Secure Code)
 Sử dụng cơ chế Parameter Binding của TypeORM hoặc thư viện Database Driver để tự động xử lý ký tự đặc biệt.
