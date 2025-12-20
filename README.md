@@ -1,20 +1,4 @@
 
-<p align="center">
-  <a href="[http://nestjs.com/](http://nestjs.com/)" target="blank"><img src="[https://nestjs.com/img/logo-small.svg](https://nestjs.com/img/logo-small.svg)" width="120" alt="Nest Logo" /></a>
-</p>
-
-<p align="center">A progressive <a href="[http://nodejs.org](http://nodejs.org)" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-
-<p align="center">
-    <a href="[https://www.npmjs.com/~nestjscore](https://www.npmjs.com/~nestjscore)" target="_blank"><img src="[https://img.shields.io/npm/v/@nestjs/core.svg](https://img.shields.io/npm/v/@nestjs/core.svg)" alt="NPM Version" /></a>
-    <a href="[https://www.npmjs.com/~nestjscore](https://www.npmjs.com/~nestjscore)" target="_blank"><img src="[https://img.shields.io/npm/l/@nestjs/core.svg](https://img.shields.io/npm/l/@nestjs/core.svg)" alt="Package License" /></a>
-    <a href="[https://www.npmjs.com/~nestjscore](https://www.npmjs.com/~nestjscore)" target="_blank"><img src="[https://img.shields.io/npm/dm/@nestjs/common.svg](https://img.shields.io/npm/dm/@nestjs/common.svg)" alt="NPM Downloads" /></a>
-    <a href="[https://circleci.com/gh/nestjs/nest](https://circleci.com/gh/nestjs/nest)" target="_blank"><img src="[https://img.shields.io/circleci/build/github/nestjs/nest/master](https://img.shields.io/circleci/build/github/nestjs/nest/master)" alt="CircleCI" /></a>
-    <a href="[https://discord.gg/G7Qnnhy](https://discord.gg/G7Qnnhy)" target="_blank"><img src="[https://img.shields.io/badge/discord-online-brightgreen.svg](https://img.shields.io/badge/discord-online-brightgreen.svg)" alt="Discord"/></a>
-</p>
-
----
-
 # 🛡️ Báo Cáo Thực Nghiệm Bảo Mật & Hiệu Năng
 
 **Dự án:** Bookshelf API  
@@ -85,7 +69,7 @@ Khi bật WAF Rule, hệ thống chặn thành công phần lớn lưu lượng 
 
 * **Tỷ lệ lỗi (Error Rate):** ~71% (Request bị chặn bởi Cloudflare).
 * **Mã phản hồi:** Chủ yếu là `403 Forbidden` thay vì sập server.
-
+![DEMO KẾT QUẢ](bieudoDD.jpg)
 ---
 
 ## 2. Thực nghiệm SQL Injection
@@ -136,7 +120,7 @@ SELECT * FROM books WHERE books.name = 'abc' OR '1'='1' ...
 
 
 * **Kết quả:** API trả về **TOÀN BỘ DANH SÁCH SÁCH** thay vì rỗng.
-
+![DEMO KẾT QUẢ](SQL_IJ.jpg)
 ### ✅ Code An toàn (Secure Code)
 
 Sử dụng cơ chế **Parameter Binding** của TypeORM để tự động xử lý ký tự đặc biệt.
@@ -153,8 +137,7 @@ async findAll(name: string) {
 ```
 
 **Kết quả sau khi fix:**
-Nếu nhập Payload tấn công, hệ thống sẽ coi `abc' OR '1'='1` là một chuỗi tên sách bình thường. Vì không có sách nào có tên y hệt như vậy, hệ thống sẽ trả về danh sách rỗng. Điều này chứng tỏ mã độc không còn được thực thi và lỗ hổng đã được vá.
-
+Nếu nhập Payload tấn công, hệ thống sẽ coi `abc' OR '1'='1` là một chuỗi tên sách bình thường. Nhưng lưu ý là vì với web thì sách sẽ được public sẵn nên khi có `'OR '1' = '1'` thì kết quả vẫn như v chỉ là lúc này đã có type ORM lấy all nên với nó là vô nghĩa
 ---
 
 ## 3. Các biện pháp bảo mật khác
@@ -187,7 +170,7 @@ Hệ thống đang tiếp tục được nâng cấp với các tiêu chuẩn b�
 
 ---
 
-## 🔗 Liên kết Demo
+## Liên kết Demo
 
 * **Website:** [https://zenly.id.vn](https://zenly.id.vn)
 * **API Service:** [https://api.zenly.id.vn](https://api.zenly.id.vn)
