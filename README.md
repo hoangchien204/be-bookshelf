@@ -69,7 +69,7 @@ Khi bật WAF Rule, hệ thống chặn thành công phần lớn lưu lượng 
 
 * **Tỷ lệ lỗi (Error Rate):** ~71% (Request bị chặn bởi Cloudflare).
 * **Mã phản hồi:** Chủ yếu là `403 Forbidden` thay vì sập server.
-![DEMO KẾT QUẢ](bieudoDD.jpg)
+![DEMO KẾT QUẢ](./imgTest/bieudoDD.jpg)
 ---
 
 ## 2. Thực nghiệm SQL Injection
@@ -120,7 +120,7 @@ SELECT * FROM books WHERE books.name = 'abc' OR '1'='1' ...
 
 
 * **Kết quả:** API trả về **TOÀN BỘ DANH SÁCH SÁCH** thay vì rỗng.
-![DEMO KẾT QUẢ](SQL_IJ.jpg)
+![DEMO KẾT QUẢ](./imgTest/SQL_IJ.jpg)
 ### ✅ Code An toàn (Secure Code)
 
 Sử dụng cơ chế **Parameter Binding** của TypeORM để tự động xử lý ký tự đặc biệt.
