@@ -38,6 +38,7 @@ export class BookService {
     const book = await this.bookRepository.findOne({ where: { id }, relations: ['series', 'genre', 'genres'] });
     if (!book) throw new NotFoundException(`Book with id ${id} not found`);
     return book;
+    
   }
 
   // Create sách kèm upload + series
@@ -156,7 +157,7 @@ export class BookService {
   }
 
 
-  // Create đơn giản 
+  // Tạo series
   async create(bookData: Partial<Book> & { seriesTitleNew?: string; isSeries?: boolean }) {
     let seriesId = bookData.seriesId || null;
     if (bookData.isSeries && !seriesId && bookData.seriesTitleNew) {
@@ -176,7 +177,7 @@ export class BookService {
   async findBySeries(seriesId: string) {
     return this.bookRepository.find({ where: { seriesId }, order: { volumeNumber: 'ASC' } });
   }
-
+  //update tập
   async update(id: string, updateData: Partial<Book>) {
     const book = await this.bookRepository.findOneBy({ id });
     if (!book) throw new NotFoundException('Không tìm thấy sách');

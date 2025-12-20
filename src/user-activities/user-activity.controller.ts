@@ -56,6 +56,6 @@ export class UserActivityController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.activityService.remove(id);
+    return this.activityService.remove(id); 
   }
 }

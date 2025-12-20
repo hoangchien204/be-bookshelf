@@ -9,10 +9,10 @@ export class SeriesService {
   constructor(
     @InjectRepository(Series)
     private readonly seriesRepo: Repository<Series>,
-    
+
     @InjectRepository(Book)
     private readonly bookRepo: Repository<Book>
-  ) {}
+  ) { }
 
   // body: { title: string; description?: string; coverUrl?: string }
   async create(body: any) {
@@ -21,7 +21,9 @@ export class SeriesService {
       throw new ConflictException('title is required');
     }
 
-    const exists = await this.seriesRepo.findOne({ where: { title } });
+    const exists = await this.seriesRepo.findOne({
+      where: { title: ILike(title) },
+    }); 
     if (exists) throw new ConflictException('Series title already exists');
 
     const entity = this.seriesRepo.create({ title, description, coverUrl });
@@ -59,12 +61,12 @@ export class SeriesService {
   }
 
   async findBooks(seriesId: string) {
-  return this.bookRepo.find({
-    where: { seriesId },
-    order: { volumeNumber: 'ASC' },
-    relations: ['series'],
-  });
-}
+    return this.bookRepo.find({
+      where: { seriesId },
+      order: { volumeNumber: 'ASC' },
+      relations: ['series'],
+    });
+  }
   async update(id: string, body: any) {
     const found = await this.seriesRepo.findOne({ where: { id } });
     if (!found) throw new NotFoundException('Series not found');

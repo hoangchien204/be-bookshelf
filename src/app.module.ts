@@ -59,7 +59,7 @@ import { TestController } from './upload/rattinglimit.controller';
      ThrottlerModule.forRoot([
       {
         ttl: 60_000,   
-        limit: 20,  
+        limit: 100,  
       },
     ]),
   ],

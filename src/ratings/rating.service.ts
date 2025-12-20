@@ -16,7 +16,7 @@ export class RatingService {
     private readonly bookRepo: Repository<Book>,
   ) {}
 
-  // 🟢 Tạo mới hoặc cập nhật rating cho 1 user + 1 book
+  // Tạo mới hoặc cập nhật rating cho 1 user + 1 book
   async upsertRating(
     userId: string,
     bookId: string,
@@ -50,7 +50,7 @@ export class RatingService {
     return this.ratingRepo.save(rating);
   }
 
-  // 🟢 Lấy danh sách rating theo sách (mới nhất trước)
+  // Lấy danh sách rating theo sách (mới nhất trước)
   async getRatingsForBook(bookId: string): Promise<Rating[]> {
     return this.ratingRepo.find({
       where: { bookId },
@@ -69,7 +69,7 @@ export class RatingService {
     return parseFloat(result?.avg) || 0;
   }
 
-  // 🟢 Xóa rating của 1 user cho 1 sách
+  // Xóa rating của 1 user cho 1 sách
   async removeRating(userId: string, bookId: string): Promise<void> {
     const rating = await this.ratingRepo.findOne({ where: { userId, bookId } });
     if (!rating) throw new NotFoundException('Rating not found');

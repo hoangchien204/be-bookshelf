@@ -23,7 +23,7 @@ export class AuthService {
     const key = emailOrUsername.toLowerCase();
     const now = Date.now();
 
-    const attempts = this.loginAttempts.get(key);
+    const attempts = this.loginAttempts.get(key); //theo dõi số lần đăng nhập
     if (attempts && attempts.count >= this.MAX_ATTEMPTS && now - attempts.lastAttempt < this.LOCK_TIME) {
       throw new HttpException(
         `Bạn đã nhập sai quá ${this.MAX_ATTEMPTS} lần. Vui lòng thử lại sau 30s.`,
