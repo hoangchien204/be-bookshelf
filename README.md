@@ -138,7 +138,7 @@ async findAll(name: string) {
 
 **Kết quả sau khi fix:**
 Nếu nhập Payload tấn công, hệ thống sẽ coi `abc' OR '1'='1` là một chuỗi tên sách bình thường. Nhưng lưu ý là vì với web thì sách sẽ được public sẵn nên khi có `'OR '1' = '1'` thì kết quả vẫn như v chỉ là lúc này đã có type ORM lấy all nên với nó là vô nghĩa
----
+
 
 ## 3. Các biện pháp bảo mật khác
 
