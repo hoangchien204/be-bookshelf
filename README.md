@@ -1,8 +1,11 @@
 
+```markdown
 <p align="center">
   <a href="[http://nestjs.com/](http://nestjs.com/)" target="blank"><img src="[https://nestjs.com/img/logo-small.svg](https://nestjs.com/img/logo-small.svg)" width="120" alt="Nest Logo" /></a>
 </p>
+
 <p align="center">A progressive <a href="[http://nodejs.org](http://nodejs.org)" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+
 <p align="center">
     <a href="[https://www.npmjs.com/~nestjscore](https://www.npmjs.com/~nestjscore)" target="_blank"><img src="[https://img.shields.io/npm/v/@nestjs/core.svg](https://img.shields.io/npm/v/@nestjs/core.svg)" alt="NPM Version" /></a>
     <a href="[https://www.npmjs.com/~nestjscore](https://www.npmjs.com/~nestjscore)" target="_blank"><img src="[https://img.shields.io/npm/l/@nestjs/core.svg](https://img.shields.io/npm/l/@nestjs/core.svg)" alt="Package License" /></a>
@@ -10,6 +13,7 @@
     <a href="[https://circleci.com/gh/nestjs/nest](https://circleci.com/gh/nestjs/nest)" target="_blank"><img src="[https://img.shields.io/circleci/build/github/nestjs/nest/master](https://img.shields.io/circleci/build/github/nestjs/nest/master)" alt="CircleCI" /></a>
     <a href="[https://discord.gg/G7Qnnhy](https://discord.gg/G7Qnnhy)" target="_blank"><img src="[https://img.shields.io/badge/discord-online-brightgreen.svg](https://img.shields.io/badge/discord-online-brightgreen.svg)" alt="Discord"/></a>
 </p>
+
 ---
 
 # 🛡️ Báo Cáo Thực Nghiệm Bảo Mật & Hiệu Năng
@@ -53,47 +57,54 @@ npm install
 # 3. Cấu hình môi trường (.env)
 # Tạo file .env và điền thông tin DB của bạn
 cp .env.example .env
-1. Chống tấn công từ chối dịch vụ (DDoS Protection)
-🔒 Giải pháp: Cloudflare WAF
+
+```
+
+---
+
+## 1. Chống tấn công từ chối dịch vụ (DDoS Protection)
+
+### 🔒 Giải pháp: Cloudflare WAF
+
 Hệ thống sử dụng Cloudflare làm lớp lá chắn đầu tiên để lọc lưu lượng truy cập trước khi đến Server gốc (Render).
 
-Rule Name: Challenge Non-VN (Block Foreign IP).
+* **Rule Name:** Challenge Non-VN (Block Foreign IP).
+* **Cơ chế:** Chặn hoặc yêu cầu xác thực (Managed Challenge) đối với tất cả IP không đến từ Việt Nam.
+* **Mục đích:** Ngăn chặn Botnet quốc tế và giảm tải cho Server.
 
-Cơ chế: Chặn hoặc yêu cầu xác thực (Managed Challenge) đối với tất cả IP không đến từ Việt Nam.
+### 💥 Công cụ kiểm thử: Loader.io
 
-Mục đích: Ngăn chặn Botnet quốc tế và giảm tải cho Server.
-
-💥 Công cụ kiểm thử: Loader.io
 Giả lập tấn công (Stress Test) từ các Server tại Mỹ.
 
-Mode: Clients per second (Mô phỏng DDoS).
+* **Mode:** Clients per second (Mô phỏng DDoS).
+* **Load:** 50 - 250 request/giây.
+* **Target:** `https://api.zenly.id.vn`.
 
-Load: 50 - 250 request/giây.
+### 📊 Kết quả Demo
 
-Target: https://api.zenly.id.vn.
-
-📊 Kết quả Demo
 Khi bật WAF Rule, hệ thống chặn thành công phần lớn lưu lượng tấn công.
 
-Tỷ lệ lỗi (Error Rate): ~71% (Request bị chặn bởi Cloudflare).
+* **Tỷ lệ lỗi (Error Rate):** ~71% (Request bị chặn bởi Cloudflare).
+* **Mã phản hồi:** Chủ yếu là `403 Forbidden` thay vì sập server.
 
-Mã phản hồi: Chủ yếu là 403 Forbidden thay vì sập server.
+---
 
-2. Thực nghiệm SQL Injection
+## 2. Thực nghiệm SQL Injection
+
 Đã thực hiện dựng lại hiện trường lỗ hổng SQL Injection để hiểu rõ cơ chế tấn công và cách phòng chống.
 
-🧪 Kịch bản kiểm thử
+### 🧪 Kịch bản kiểm thử
+
 Mục tiêu là tấn công vào API tìm kiếm sách để lấy toàn bộ dữ liệu database thay vì một quyển sách cụ thể.
 
-Endpoint: GET /books
+* **Endpoint:** `GET /books`
+* **Param:** `name` (hoặc `title`)
 
-Param: name (hoặc title)
+### ❌ Code Lỗ hổng (Vulnerable Code)
 
-❌ Code Lỗ hổng (Vulnerable Code)
 Sử dụng nối chuỗi trực tiếp (String Concatenation) tạo điều kiện cho hacker chèn mã độc.
 
-TypeScript
-
+```typescript
 // books.service.ts
 async findAll(name: string) {
   // Lỗi bảo mật nghiêm trọng: Cộng chuỗi trực tiếp
@@ -104,24 +115,34 @@ async findAll(name: string) {
   `;
   return this.bookRepository.query(sql);
 }
-💣 Phương thức tấn công (Payload)
+
+```
+
+### 💣 Phương thức tấn công (Payload)
+
 Hacker sử dụng kỹ thuật "Always True" (Luôn đúng) để vô hiệu hóa bộ lọc.
 
-URL Tấn công:
-
+* **URL Tấn công:**
+```
 /books?name=abc' OR '1'='1
-Câu lệnh SQL thực tế chạy trong Database:
 
-SQL
+```
 
+
+* **Câu lệnh SQL thực tế chạy trong Database:**
+```sql
 SELECT * FROM books WHERE books.name = 'abc' OR '1'='1' ...
-Kết quả: API trả về TOÀN BỘ DANH SÁCH SÁCH thay vì rỗng.
 
-✅ Code An toàn (Secure Code)
-Sử dụng cơ chế Parameter Binding của TypeORM để tự động xử lý ký tự đặc biệt.
+```
 
-TypeScript
 
+* **Kết quả:** API trả về **TOÀN BỘ DANH SÁCH SÁCH** thay vì rỗng.
+
+### ✅ Code An toàn (Secure Code)
+
+Sử dụng cơ chế **Parameter Binding** của TypeORM để tự động xử lý ký tự đặc biệt.
+
+```typescript
 // books.service.ts (Fixed)
 async findAll(name: string) {
   // Sử dụng TypeORM Query Builder hoặc Find Options
@@ -129,41 +150,49 @@ async findAll(name: string) {
     where: { name: name } // An toàn tuyệt đối
   });
 }
-Kết quả sau khi fix: Nếu nhập Payload tấn công, hệ thống sẽ coi abc' OR '1'='1 là một chuỗi tên sách bình thường. Vì không có sách nào có tên y hệt như vậy, hệ thống sẽ trả về danh sách rỗng. Điều này chứng tỏ mã độc không còn được thực thi và lỗ hổng đã được vá.
 
-3. Các biện pháp bảo mật khác
+```
+
+**Kết quả sau khi fix:**
+Nếu nhập Payload tấn công, hệ thống sẽ coi `abc' OR '1'='1` là một chuỗi tên sách bình thường. Vì không có sách nào có tên y hệt như vậy, hệ thống sẽ trả về danh sách rỗng. Điều này chứng tỏ mã độc không còn được thực thi và lỗ hổng đã được vá.
+
+---
+
+## 3. Các biện pháp bảo mật khác
+
 Hệ thống đang tiếp tục được nâng cấp với các tiêu chuẩn bảo mật sau:
 
-XSS (Cross-Site Scripting)
-Vấn đề: Người dùng cố ý nhập các thẻ script độc hại (ví dụ: <script>alert('hacked')</script>).
+### XSS (Cross-Site Scripting)
 
-Giải pháp: Sử dụng Global Interceptor kết hợp thư viện xss.
+* **Vấn đề:** Người dùng cố ý nhập các thẻ script độc hại (ví dụ: `<script>alert('hacked')</script>`).
+* **Giải pháp:** Sử dụng Global Interceptor kết hợp thư viện `xss`.
+* **Cơ chế:**
+* Hệ thống quét toàn bộ Body, Query, Params.
+* Tự động mã hóa (escape) các ký tự nguy hiểm thành ký tự an toàn trước khi lưu vào Database.
+* *Ví dụ:* `<script>` sẽ được lưu thành `&lt;script&gt;`.
 
-Cơ chế:
 
-Hệ thống quét toàn bộ Body, Query, Params.
 
-Tự động mã hóa (escape) các ký tự nguy hiểm thành ký tự an toàn trước khi lưu vào Database.
+### Các lớp bảo mật bổ sung
 
-Ví dụ: <script> sẽ được lưu thành &lt;script&gt;.
+* **SSL/TLS (HTTPS):** Đã kích hoạt qua Cloudflare (Hiển thị ổ khóa an toàn, chống nghe lén Man-in-the-Middle).
+* **CORS:** Cấu hình chặt chẽ, Whitelist chỉ cho phép domain Frontend (`zenly.id.vn`) được gọi API.
+* **Rate Limiting:** Giới hạn số lượng request/phút từ 1 IP để chống spam/brute-force.
+* **Authentication & Authorization:**
+* Sử dụng JWT (Access Token & Refresh Token).
+* Xác thực Email (Verify Email).
+* Phân quyền người dùng (Roles Guard).
+* Validation dữ liệu đầu vào (DTO).
 
-Các lớp bảo mật bổ sung
-SSL/TLS (HTTPS): Đã kích hoạt qua Cloudflare (Hiển thị ổ khóa an toàn, chống nghe lén Man-in-the-Middle).
 
-CORS: Cấu hình chặt chẽ, Whitelist chỉ cho phép domain Frontend (zenly.id.vn) được gọi API.
 
-Rate Limiting: Giới hạn số lượng request/phút từ 1 IP để chống spam/brute-force.
+---
 
-Authentication & Authorization:
+## 🔗 Liên kết Demo
 
-Sử dụng JWT (Access Token & Refresh Token).
+* **Website:** [https://zenly.id.vn](https://zenly.id.vn)
+* **API Service:** [https://api.zenly.id.vn](https://api.zenly.id.vn)
 
-Xác thực Email (Verify Email).
+```
 
-Phân quyền người dùng (Roles Guard).
-
-Validation dữ liệu đầu vào (DTO).
-
-🔗 Liên kết Demo
-Website: https://zenly.id.vn
-API Service: https://api.zenly.id.vn
+```
