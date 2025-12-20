@@ -22,81 +22,6 @@
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
 ## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
-```
-
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-
 🛡️ Báo Cáo Thực Nghiệm Bảo Mật & Hiệu Năng (Security & Performance Report)
 Dự án: Bookshelf API Công nghệ: NestJS, PostgreSQL, TypeORM, Cloudflare
 
@@ -139,9 +64,7 @@ Tỷ lệ lỗi (Error Rate): ~71% (Đây là kết quả tốt, thể hiện s�
 
 Mã phản hồi: Chủ yếu là 403 Forbidden (Cloudflare chặn) thay vì 200 OK hoặc 500 Server Error.
 
-📷 [Chèn ảnh biểu đồ Loader.io màu đỏ tại đây] > Biểu đồ cho thấy Cloudflare đã chặn đứng các request từ Mỹ (Màu đỏ), bảo vệ Server an toàn.
-
-📷 [Chèn ảnh Log Cloudflare tại đây] > Log chi tiết cho thấy Action "Managed Challenge" được kích hoạt với bot của Loader.io.
+![Biểu đồ Loader.io](bieudoDD.jpg)
 
 2. Thực nghiệm SQL Injection
 Đã thực hiện dựng lại hiện trường lỗ hổng SQL Injection để hiểu rõ cơ chế tấn công và cách phòng chống.
@@ -180,7 +103,7 @@ SQL
 
 SELECT * FROM books WHERE books.name = 'abc' OR '1'='1' ...
 Kết quả: API trả về TOÀN BỘ DANH SÁCH SÁCH thay vì rỗng.
-
+![SQL Injection](SQL_IJ.jpg)
 📷 [Chèn ảnh Postman/Trình duyệt hiện full danh sách sách khi hack tại đây]
 
 ✅ Code An toàn (Secure Code)
@@ -202,8 +125,8 @@ Hệ thống đang tiếp tục được nâng cấp với các tiêu chuẩn b�
 
 SSL/TLS (HTTPS): Đã kích hoạt qua Cloudflare (Hiển thị ổ khóa an toàn, chống nghe lén Man-in-the-Middle).
 
-Helmet: (Dự kiến) Sử dụng thư viện helmet cho NestJS để ẩn các HTTP Header nhạy cảm (X-Powered-By).
-
 CORS: Cấu hình chặt chẽ chỉ cho phép domain Frontend (zenly.id.vn) được gọi API.
 
-Rate Limiting: (Dự kiến) Giới hạn số lượng request/phút từ 1 IP để chống spam từ nội địa.
+Rate Limiting: Giới hạn số lượng request/phút từ 1 IP để chống spam từ nội địa.
+
+XSS: loại bỏ các script khi người dùng cố ý nhập 1 dãy script
