@@ -64,7 +64,7 @@ Tỷ lệ lỗi (Error Rate): ~71% (Đây là kết quả tốt, thể hiện s�
 
 Mã phản hồi: Chủ yếu là 403 Forbidden (Cloudflare chặn) thay vì 200 OK hoặc 500 Server Error.
 
-![Biểu đồ Loader.io](bieudoDD.jpg)
+![Biểu đồ Loader.io](./imgTest/bieudoDD.jpg)
 
 2. Thực nghiệm SQL Injection
 Đã thực hiện dựng lại hiện trường lỗ hổng SQL Injection để hiểu rõ cơ chế tấn công và cách phòng chống.
@@ -103,7 +103,7 @@ SQL
 
 SELECT * FROM books WHERE books.name = 'abc' OR '1'='1' ...
 Kết quả: API trả về TOÀN BỘ DANH SÁCH SÁCH thay vì rỗng.
-![SQL Injection](SQL_IJ.jpg)
+![SQL Injection](./imgTest/SQL_IJ.jpg)
 📷 [Chèn ảnh Postman/Trình duyệt hiện full danh sách sách khi hack tại đây]
 
 ✅ Code An toàn (Secure Code)
