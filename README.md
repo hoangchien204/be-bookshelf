@@ -1,5 +1,4 @@
 
-```
 <p align="center">
   <a href="[http://nestjs.com/](http://nestjs.com/)" target="blank"><img src="[https://nestjs.com/img/logo-small.svg](https://nestjs.com/img/logo-small.svg)" width="120" alt="Nest Logo" /></a>
 </p>
@@ -195,4 +194,3 @@ Hệ thống đang tiếp tục được nâng cấp với các tiêu chuẩn b�
 
 ```
 
-```
