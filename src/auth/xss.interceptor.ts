@@ -1,6 +1,5 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import * as xss from 'xss';
 
 @Injectable()
@@ -8,10 +7,18 @@ export class XssInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
 
+    // 1. Lọc Body
     if (request.body) {
-      request.body = this.cleanObject(request.body);
+      this.cleanObject(request.body);
     }
-
+    // 2. Lọc Query Params
+    if (request.query) {
+      this.cleanObject(request.query);
+    }
+    // 3. Lọc Params
+    if (request.params) {
+      this.cleanObject(request.params);
+    }
     return next.handle();
   }
 
