@@ -34,11 +34,11 @@ export class BookService {
     });
   }
 
+
   async findOne(id: string) {
     const book = await this.bookRepository.findOne({ where: { id }, relations: ['series', 'genre', 'genres'] });
     if (!book) throw new NotFoundException(`Book with id ${id} not found`);
     return book;
-    
   }
 
   // Create sách kèm upload + series
@@ -205,4 +205,13 @@ export class BookService {
       .limit(limit)
       .getMany();
   }
+
+  async getHotBooks(limit = 7) {
+  return this.bookRepository.find({
+    order: {
+      viewCount: 'DESC',
+    },
+    take: limit,
+  });
+}
 }

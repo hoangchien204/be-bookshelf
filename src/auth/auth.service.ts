@@ -98,6 +98,13 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token không hợp lệ hoặc đã hết hạn');
     }
   }
+  async logout(userId: string) {
+    const user = await this.userService.findById(userId);
+    if (!user) return;
+
+    user.refreshToken = null;
+    await this.userService.update(user);
+  }
 
 
 }

@@ -47,6 +47,6 @@ export class User {
   @Column({ default: false })
   isVerified: boolean;
 
-  @Column({ nullable: true })
-  refreshToken?: string;
+  @Column({type: 'text', nullable: true })
+  refreshToken: string | null;
 }

@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { XssInterceptor } from './auth/xss.interceptor';
+import * as cookieParser from 'cookie-parser';
 
 const allowedOrigins = [
   'http://localhost:5173',
@@ -25,8 +26,9 @@ async function bootstrap() {
     origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
   });
+  app.use(cookieParser());
 
   await app.listen(process.env.PORT ?? 3000);
 }

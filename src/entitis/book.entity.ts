@@ -91,6 +91,9 @@ export class Book {
 
   @Column({ nullable: true })
   metadataCid: string;
+
+  @Column({ type: 'int', default: 0 })
+  viewCount: number;
 }
 
 

@@ -33,6 +33,10 @@ export class BookController {
   async findAll() {
     return this.bookService.findAll();
   }
+  @Get('hot')
+  async getHotBook() {
+    return this.bookService.getHotBooks();
+  }
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.bookService.findOne(id);
@@ -87,4 +91,6 @@ export class BookController {
   async remove(@Param('id') id: string) {
     return this.bookService.remove(id);
   }
+
+
 }
